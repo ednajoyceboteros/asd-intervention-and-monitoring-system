@@ -1412,10 +1412,10 @@
       </div>
 
       <!-- Manage Account Section -->
-      <div class="card full-width" style="margin-top:20px;">
+      <div class="card full-width" style="margin-top:20px;position:relative;" id="manageAccountCard">
         <div class="card-header">
           <h2 class="card-title">Manage Account</h2>
-          <button type="button" class="chip-filter" onclick="void 0;">
+          <button type="button" class="chip-filter" onclick="toggleManageFilter()">
             <svg viewBox="0 0 24 24">
               <path d="M3 6h18M7 12h10M10 18h4"/>
             </svg>
@@ -1423,18 +1423,46 @@
           </button>
         </div>
 
-        <!-- Month/Year Filter -->
+        <!-- Filter Popover -->
+        <div class="ms-filter" id="manageFilter">
+          <div class="hdr">
+            <h4>Filter</h4>
+            <button type="button" aria-label="Close" onclick="closeManageFilter()">✕</button>
+          </div>
+
+          <div class="ms-field">
+            <label>Month</label>
+            <select class="ms-select" id="filterMonth">
+              <option value="0">January</option>
+              <option value="1">February</option>
+              <option value="2">March</option>
+              <option value="3">April</option>
+              <option value="4">May</option>
+              <option value="5">June</option>
+              <option value="6">July</option>
+              <option value="7">August</option>
+              <option value="8">September</option>
+              <option value="9">October</option>
+              <option value="10">November</option>
+              <option value="11">December</option>
+            </select>
+          </div>
+
+          <div class="ms-field">
+            <label>Year</label>
+            <select class="ms-select" id="filterYear"></select>
+          </div>
+
+          <div class="ms-footer">
+            <button type="button" class="btn-clear" onclick="clearManageFilter()">Clear</button>
+            <button type="button" class="btn-apply" onclick="applyManageFilter()">Apply</button>
+          </div>
+        </div>
+
+        <!-- Display Selected Month/Year -->
         <div class="filter-bar">
-          <label style="font-size:11px;font-weight:600">Show</label>
-          <select class="filter-input" id="showMonth">
-            <option>January</option>
-            <option>February</option>
-            <option>March</option>
-          </select>
-          <select class="filter-input" id="showYear">
-            <option selected>2025</option>
-            <option>2024</option>
-          </select>
+          <label style="font-size:11px;font-weight:600">Show:</label>
+          <span id="displayMonthYear" style="font-size:12px;font-weight:600;color:var(--primary-color);margin-left:6px"></span>
         </div>
 
         <!-- Charts Row: Account Activity + Donut (left) | Bar Chart (right) -->
@@ -1453,7 +1481,7 @@
                 <div style="display:flex; justify-content:flex-end; margin:-4px 0 10px 0;">
                   <div class="aa-filter">
                     <button class="chip-filter" id="aaFilterBtn" onclick="toggleAAFilter()">
-                      Change Source
+                      <span id="aaSourceLabel">Overall</span>
                     </button>
                     <div class="aa-panel" id="aaPanel">
                       <div class="hdr">
@@ -1567,7 +1595,7 @@
             <table class="account-list-table">
               <thead>
                 <tr>
-                  <th>Date Last Active</th>
+                  <th id="dateColumnHeader">Date Last Active</th>
                   <th>Name</th>
                   <th>Parent/Guardian</th>
                   <th>Teacher</th>
@@ -1740,29 +1768,37 @@
       return parseInt(yyyy, 10);
     }
 
+    function getMonthName(monthIndex) {
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+      return months[monthIndex] || '';
+    }
+
     /* ==========================================
        RENDER FUNCTIONS
        ========================================== */
-    function renderRecentAccounts() {
-      const container = document.getElementById('recentAccountsList');
-      container.innerHTML = seedData.recentAccounts.map(account => `
-        <div class="account-item">
-          <div class="account-avatar"></div>
-          <div class="account-info">
-            <div class="account-name">${account.name}</div>
-            <div class="account-meta">
-              <span>001</span>
-              <span>${account.age}</span>
-              <span class="account-badge badge-level">${account.level}</span>
+      function renderRecentAccounts() {
+        const container = document.getElementById('recentAccountsList');
+        
+        container.innerHTML = seedData.recentAccounts.map(account => `
+          <a href="staff_mainchildprofile.html?id=${account.id}" class="account-item" style="display:flex;text-decoration:none;color:inherit;">
+            <div class="account-avatar"></div>
+            <div class="account-info">
+              <div class="account-name">${account.name}</div>
+              <div class="account-meta">
+                <span>001</span>
+                <span>${account.age}</span>
+                <span class="account-badge badge-level">${account.level}</span>
+              </div>
+              <div style="font-size:10px;color:var(--text-secondary);margin-top:3px">
+                OT: ${account.therapist}
+              </div>
+              <div class="account-timestamp">Last viewed ${account.lastViewed}</div>
             </div>
-            <div style="font-size:10px;color:var(--text-secondary);margin-top:3px">
-              OT: ${account.therapist}
-            </div>
-            <div class="account-timestamp">Last viewed ${account.lastViewed}</div>
-          </div>
-        </div>
-      `).join('');
-    }
+          </a>
+        `).join('');
+      }
+
 
     function renderMissedSessions(rows = seedData.missedSessions) {
       const tbody = document.getElementById('missedSessionsTable');
@@ -1840,6 +1876,72 @@
       if (value === 'attended') rows = rows.filter(r => r.status === 'Attended');
       if (value === 'missed') rows = rows.filter(r => r.status === 'Missed');
       renderMissedSessions(rows);
+    }
+
+    /* ==========================================
+       MANAGE ACCOUNT FILTER
+       ========================================== */
+    let selectedManageMonth = null;
+    let selectedManageYear = null;
+
+    function toggleManageFilter() {
+      const panel = document.getElementById('manageFilter');
+      panel.classList.toggle('show');
+      const btn = document.querySelector('#manageAccountCard .chip-filter');
+      btn.classList.toggle('active', panel.classList.contains('show'));
+    }
+
+    function closeManageFilter() {
+      const panel = document.getElementById('manageFilter');
+      panel.classList.remove('show');
+      const btn = document.querySelector('#manageAccountCard .chip-filter');
+      btn.classList.remove('active');
+    }
+
+    function clearManageFilter() {
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      document.getElementById('filterMonth').value = currentMonth;
+      document.getElementById('filterYear').value = currentYear;
+      
+      selectedManageMonth = currentMonth;
+      selectedManageYear = currentYear;
+      
+      updateManageDisplay();
+    }
+
+    function applyManageFilter() {
+      const monthSelect = document.getElementById('filterMonth');
+      const yearSelect = document.getElementById('filterYear');
+      
+      selectedManageMonth = parseInt(monthSelect.value);
+      selectedManageYear = parseInt(yearSelect.value);
+      
+      updateManageDisplay();
+      closeManageFilter();
+    }
+
+    function updateManageDisplay() {
+      const display = document.getElementById('displayMonthYear');
+      if (selectedManageMonth !== null && selectedManageYear !== null) {
+        display.textContent = `${getMonthName(selectedManageMonth)} ${selectedManageYear}`;
+      }
+    }
+
+    function populateManageFilterYear() {
+      const select = document.getElementById('filterYear');
+      if (!select) return;
+
+      select.innerHTML = '';
+      const currentYear = new Date().getFullYear();
+      for (let year = currentYear; year >= 2000; year--) {
+        const option = document.createElement('option');
+        option.value = String(year);
+        option.textContent = String(year);
+        select.appendChild(option);
+      }
+      select.value = currentYear;
     }
 
     /* ==========================================
@@ -1926,6 +2028,7 @@
 
       applyAccountFilters();
       updateReasonColumnVisibility();
+      updateDateColumnHeader();
     }
 
     function updateReasonColumnVisibility() {
@@ -1933,6 +2036,17 @@
       if (!table) return;
       const hide = (accountFilterState.status === 'active' || accountFilterState.status === 'new');
       table.classList.toggle('table-hide-reason', hide);
+    }
+
+    function updateDateColumnHeader() {
+      const header = document.getElementById('dateColumnHeader');
+      if (!header) return;
+      
+      if (accountFilterState.status === 'active' || accountFilterState.status === 'new') {
+        header.textContent = 'Date Active';
+      } else {
+        header.textContent = 'Date Last Active';
+      }
     }
 
     /* ==========================================
@@ -1972,6 +2086,16 @@
       document.getElementById('aaNew').value = nu;
       document.getElementById('aaInactive').value = inactive;
       document.getElementById('aaArchive').value = archive;
+
+      // Update button label
+      const label = document.getElementById('aaSourceLabel');
+      if (source === 'overall') {
+        label.textContent = 'Overall';
+      } else if (source === 'DSWD') {
+        label.textContent = 'DSWD';
+      } else if (source === 'Independent') {
+        label.textContent = 'Independent';
+      }
 
       toggleAAFilter();
     }
@@ -2154,48 +2278,6 @@
     }
 
     /* ==========================================
-       MONTH/YEAR SELECTORS
-       ========================================== */
-    function populateShowSelectorsFor(monthId, yearId, onChange) {
-      const monthSelect = document.getElementById(monthId);
-      const yearSelect = document.getElementById(yearId);
-      if (!monthSelect || !yearSelect) return;
-
-      const MONTHS = Array.from({ length: 12 }, (_, i) =>
-        new Date(2000, i, 1).toLocaleString('en-US', { month: 'long' })
-      );
-
-      monthSelect.innerHTML = '';
-      MONTHS.forEach((label, i) => {
-        const option = document.createElement('option');
-        option.value = String(i);
-        option.textContent = label;
-        monthSelect.appendChild(option);
-      });
-
-      const currentYear = new Date().getFullYear();
-      yearSelect.innerHTML = '';
-      for (let year = currentYear; year >= 2000; year--) {
-        const option = document.createElement('option');
-        option.value = String(year);
-        option.textContent = String(year);
-        yearSelect.appendChild(option);
-      }
-
-      monthSelect.value = String(new Date().getMonth());
-      yearSelect.value = String(currentYear);
-
-      const emit = () => onChange?.(parseInt(monthSelect.value, 10), parseInt(yearSelect.value, 10));
-      monthSelect.addEventListener('change', emit);
-      yearSelect.addEventListener('change', emit);
-      emit();
-    }
-
-    function onManageShowChange(monthIndex, year) {
-      console.log('Manage Account → month:', monthIndex, 'year:', year);
-    }
-
-    /* ==========================================
        UI HELPERS
        ========================================== */
     function toggleDropdown(element) {
@@ -2218,9 +2300,19 @@
       renderRecentAccounts();
       renderMissedSessions();
       updateReasonColumnVisibility();
+      updateDateColumnHeader();
 
-      // Initialize selectors
-      populateShowSelectorsFor('showMonth', 'showYear', onManageShowChange);
+      // Initialize manage filter
+      populateManageFilterYear();
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      selectedManageMonth = currentMonth;
+      selectedManageYear = currentYear;
+      document.getElementById('filterMonth').value = currentMonth;
+      document.getElementById('filterYear').value = currentYear;
+      updateManageDisplay();
+
+      // Initialize year selector
       populateYearOptions();
 
       // Initialize tabs
@@ -2283,6 +2375,27 @@
           if (panel && panel.classList.contains('show')) {
             panel.classList.remove('show');
             document.querySelector('#missedCard .chip-filter').classList.remove('active');
+          }
+        }
+      });
+
+      // Click-away for Manage Account filter
+      document.addEventListener('click', event => {
+        const panel = document.getElementById('manageFilter');
+        const trigger = document.querySelector('#manageAccountCard .chip-filter');
+        if (!panel) return;
+        if (panel.classList.contains('show') &&
+            !panel.contains(event.target) && !trigger.contains(event.target)) {
+          closeManageFilter();
+        }
+      });
+
+      // ESC key for Manage Account filter
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          const panel = document.getElementById('manageFilter');
+          if (panel && panel.classList.contains('show')) {
+            closeManageFilter();
           }
         }
       });
