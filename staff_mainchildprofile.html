@@ -4,347 +4,891 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Child Profile iChildren</title>
-  <style>
-    /* ============================================
-       CSS VARIABLES - CENTRALIZED COLOR PALETTE
-       ============================================ */
-    :root{
-      --primary-color:#5DD5C0;
-      --primary-light:#E8F9F6;
-      --accent-orange:#FF9D5C;
-      --accent-red:#FF6B6B;
-      --accent-blue:#4D96FF;
-      --accent-yellow:#FFD93D;
-      --status-queue:#E3F2FD;
-      --status-queue-text:#1976D2;
-      --status-update:#F5F5F5;        /* gray chip bg used in Evaluation */
-      --status-update-text:#6B7280;
-      --bg-dashboard:#F9F9F9;
-      --bg-container:#FFFFFF;
-      --text-primary:#2C3E50;
-      --text-secondary:#7F8C8D;
-      --border-color:#E0E0E0;
-      --sidebar-active:#F2F2F2;
-      --online-green:#4CAF50;
+<style>
+  :root {
+    --primary-color: #5DD5C0;
+    --primary-light: #E8F9F6;
+    --accent-orange: #FF9D5C;
+    --accent-red: #FF6B6B;
+    --accent-blue: #4D96FF;
+    --accent-yellow: #FFD93D;
+    --status-queue: #E3F2FD;
+    --status-queue-text: #1976D2;
+    --status-update: #F5F5F5;
+    --status-update-text: #6B7280;
+    --bg-dashboard: #F9F9F9;
+    --bg-container: #FFFFFF;
+    --text-primary: #2C3E50;
+    --text-secondary: #7F8C8D;
+    --border-color: #E0E0E0;
+    --sidebar-active: #F2F2F2;
+    --online-green: #4CAF50;
+  }
+
+  /* GLOBAL */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: var(--text-primary);
+    background-color: var(--bg-dashboard);
+  }
+
+  /* LAYOUT */
+  .dashboard-container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 180px;
+    background-color: var(--bg-container);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+  }
+
+  .profile-section {
+    text-align: center;
+    margin-bottom: 25px;
+  }
+
+  .profile-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    font-weight: 600;
+    overflow: hidden;
+  }
+
+  .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .profile-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .nav-item {
+    display: block;
+    text-decoration: none;
+    color: var(--text-secondary);
+    padding: 10px 15px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    text-align: center;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .nav-item:hover,
+  .nav-item.active {
+    background-color: var(--sidebar-active);
+    color: var(--text-primary);
+  }
+
+  .nav-item.has-dropdown::after {
+    content: '▼';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 8px;
+    transition: transform 0.2s;
+  }
+
+  .nav-item.has-dropdown.open::after {
+    transform: translateY(-50%) rotate(180deg);
+  }
+
+  .nav-dropdown {
+    display: none;
+    padding-left: 0;
+    margin-top: 5px;
+  }
+
+  .nav-dropdown.open {
+    display: block;
+  }
+
+  .nav-dropdown-item {
+    display: block;
+    text-decoration: none;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    border-radius: 4px;
+    margin-bottom: 3px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .nav-dropdown-item:hover {
+    background-color: var(--bg-dashboard);
+    color: var(--text-primary);
+  }
+
+  /* MAIN CONTENT */
+  .main-content {
+    margin-left: 180px;
+    padding: 20px 30px;
+    width: calc(100% - 180px);
+    overflow-y: auto;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .searchbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    width: 320px;
+    padding: 0 10px 0 12px;
+    background: var(--bg-container);
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .searchbar:focus-within {
+    border-color: #d0d7de;
+    box-shadow: 0 0 0 4px var(--primary-light);
+  }
+
+  .searchbar input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: 12px;
+    color: var(--text-primary);
+  }
+
+  .searchbar input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.8;
+  }
+
+  .searchbar .icon-left,
+  .searchbar .icon-right {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .searchbar .icon-left:hover,
+  .searchbar .icon-right:hover {
+    background: var(--bg-dashboard);
+    color: var(--text-primary);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .online-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-primary);
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    background-color: var(--online-green);
+    border-radius: 50%;
+  }
+
+  .notification-bell {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: transform 0.2s;
+  }
+
+  .notification-bell:hover {
+    transform: scale(1.1);
+  }
+
+  .logo-container {
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, #5DD5C0 0%, #4AC4B0 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+
+  .back-btn:hover {
+    background: var(--sidebar-active);
+  }
+
+  .back-btn:active {
+    transform: translateY(1px);
+  }
+
+  .back-btn svg {
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+  }
+
+  /* PROFILE */
+  .profile-container {
+    background-color: var(--bg-container);
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .content-wrapper {
+    display: grid;
+    grid-template-columns: 360px 1fr 380px;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      'child eval therapy'
+      'diag payment payment';
+    column-gap: 30px;
+    row-gap: 30px;
+    align-items: start;
+  }
+
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .therapy-menu-btn {
+    background: var(--bg-dashboard);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: 0.2s;
+  }
+
+  .therapy-menu-btn:hover {
+    background: var(--sidebar-active);
+  }
+
+  .section {
+    background: transparent;
+    padding: 0;
+    min-width: 0;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    background-color: var(--primary-light);
+    padding: 12px 16px;
+    border-radius: 8px;
+  }
+
+  /* EVALUATION TITLE */
+  .eval-section {
+    grid-area: eval;
+  }
+
+  .eval-section .section-title {
+    background-color: transparent;
+    margin-bottom: 4px;
+    padding-left: 0;
+    box-shadow: none;
+    color: #5f856c;
+  }
+
+  /* THERAPY TITLE */
+  .therapy-section .section-title {
+    background-color: transparent;
+    margin-bottom: 4px;
+    padding-left: 0;
+    color: #4D96FF;
+  }
+
+  .child-section {
+    grid-area: child;
+  }
+
+  .therapy-section {
+    grid-area: therapy;
+  }
+
+  .diagnosis-section {
+    grid-area: diag;
+  }
+
+  .payment-section {
+    grid-area: payment;
+  }
+
+  /* CHILD INFORMATION */
+  .child-info-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 15px;
+  }
+
+  .child-avatar-section {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .child-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .child-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .child-id {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .child-additional-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .child-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detail-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  /* EVALUATION */
+  .evaluation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+
+  .eval-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .eval-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .eval-value {
+    font-size: 12px;
+    color: var(--text-primary);
+    background-color: #F4FCFA;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #cdeee7;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
+
+  #therapistName {
+    margin-bottom: 12px;
+  }
+
+  .eval-section-offset {
+    margin-top: 50px;
+  }
+
+  /* THERAPY */
+  .therapist-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .session-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  .stat-box {
+    background-color: var(--primary-light);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .therapy-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* DIAGNOSIS */
+  .diagnosis-container {
+    background: #F2F8FF;
+    border: 1px solid #d7e7fb;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .diagnosis-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* pushes icon to the right */
+    width: 100%;
+  }
+
+  .diagnosis-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .file-upload-trigger {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #F5F9FF;
+    border: 1px solid #dce7ff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .file-upload-trigger:hover {
+    background: #E8F2FF;
+    border-color: #b8d3ff;
+  }
+
+  .upload-pill {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    background: var(--status-update);
+    border: 1px dashed var(--border-color);
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  .upload-pill.show {
+    display: inline-flex;
+  }
+
+  .diagnosis-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .diagnosis-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .diagnosis-field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .diagnosis-field-value {
+    font-size: 12px;
+    color: var(--text-primary);
+    background: #F4FCFA;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #dff3ef;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    word-break: break-word;
+  }
+
+  /* PAYMENT */
+  .payment-container {
+    border: 1px solid #8ED6A5;
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .payment-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #4CAF50;
+  }
+
+  .view-btn {
+    background: #F4FCFA;
+    border: 1px solid #bfe8df;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2C8275;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .view-btn:hover {
+    background: #E8F9F6;
+    border-color: #92d7c9;
+    transform: translateY(-1px);
+  }
+
+  .view-btn:active {
+    transform: translateY(1px);
+  }
+
+  .payment-subtitle {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .payment-params {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  .param-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .param-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+
+  .param-value {
+    font-size: 12px;
+    background: #F4FCFA;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid #dff3ef;
+    min-height: 36px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .param-value.highlight {
+    font-weight: 600;
+  }
+
+  .payment-boxes {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+
+  .payment-box {
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .payment-box.dswd {
+    border-color: #E91E63;
+  }
+
+  .payment-box.remaining {
+    border-color: #9C27B0;
+  }
+
+  .payment-box.cash {
+    border-color: #4CAF50;
+  }
+
+  .payment-box.unpaid {
+    border-color: #FF9800;
+  }
+
+  .payment-box.digital {
+    border-color: var(--border-color);
+  }
+
+  .payment-box-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .payment-box-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .payment-box-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  /* MODAL */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal.active {
+    display: flex;
+  }
+
+  .modal-content {
+    background: var(--bg-container);
+    border-radius: 12px;
+    padding: 25px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 1400px) {
+    .content-wrapper {
+      grid-template-columns: 340px 1fr 340px;
     }
 
-    /* ============================================
-       GLOBAL STYLES & TYPOGRAPHY
-       ============================================ */
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-      font-size:11px;
-      color:var(--text-primary);
-      background-color:var(--bg-dashboard);
+    .payment-params {
+      grid-template-columns: repeat(3, 1fr);
     }
 
-    /* ============================================
-       LAYOUT STRUCTURE
-       ============================================ */
-    .dashboard-container{display:flex;min-height:100vh;}
+    .payment-boxes {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
 
-    /* Sidebar */
-    .sidebar{
-      width:180px;background-color:var(--bg-container);padding:20px 0;
-      display:flex;flex-direction:column;align-items:center;
-      position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;
-    }
-    .profile-section{text-align:center;margin-bottom:25px;}
-    .profile-avatar{
-      width:70px;height:70px;border-radius:50%;
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      margin:0 auto 10px;display:flex;align-items:center;justify-content:center;
-      color:white;font-size:28px;font-weight:600;overflow:hidden;
-    }
-    .profile-avatar img{width:100%;height:100%;object-fit:cover;}
-    .profile-name{font-size:13px;font-weight:500;color:var(--text-primary);}
-
-    .nav-item{
-      display:block;text-decoration:none;color:var(--text-secondary);
-      padding:10px 15px;margin-bottom:5px;font-size:12px;border-radius:6px;
-      transition:all .2s;text-align:center;position:relative;cursor:pointer;
-    }
-    .nav-item:hover,.nav-item.active{background-color:var(--sidebar-active);color:var(--text-primary);}
-    .nav-item.has-dropdown::after{
-      content:'▼';position:absolute;right:15px;top:50%;transform:translateY(-50%);
-      font-size:8px;transition:transform .2s;
-    }
-    .nav-item.has-dropdown.open::after{transform:translateY(-50%) rotate(180deg);}
-    .nav-dropdown{display:none;padding-left:0;margin-top:5px;}
-    .nav-dropdown.open{display:block;}
-    .nav-dropdown-item{
-      display:block;text-decoration:none;padding:8px 10px;font-size:11px;
-      color:var(--text-secondary);border-radius:4px;margin-bottom:3px;transition:all .2s;text-align:center;
-    }
-    .nav-dropdown-item:hover{background-color:var(--bg-dashboard);color:var(--text-primary);}
-
-    /* Main Content */
-    .main-content{margin-left:180px;padding:20px 30px;width:calc(100% - 180px);overflow-y:auto;}
-
-    /* Header */
-    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-    .searchbar{
-      display:flex;align-items:center;gap:8px;height:40px;width:320px;padding:0 10px 0 12px;
-      background:var(--bg-container);border:1px solid var(--border-color);border-radius:9999px;
-      box-shadow:0 1px 0 rgba(0,0,0,0.02);transition:border-color .15s ease,box-shadow .15s ease;
-    }
-    .searchbar:focus-within{border-color:#d0d7de;box-shadow:0 0 0 4px var(--primary-light);}
-    .searchbar input{
-      flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:12px;color:var(--text-primary);
-    }
-    .searchbar input::placeholder{color:var(--text-secondary);opacity:.8;}
-    .searchbar .icon-left,.searchbar .icon-right{
-      display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
-      border:0;outline:0;background:transparent;color:var(--text-secondary);border-radius:999px;
-      cursor:pointer;transition:background-color .15s ease,color .15s ease;
-    }
-    .searchbar .icon-left:hover,.searchbar .icon-right:hover{background:var(--bg-dashboard);color:var(--text-primary);}
-    .header-right{display:flex;align-items:center;gap:15px;}
-    .online-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-primary);}
-    .status-dot{width:10px;height:10px;background-color:var(--online-green);border-radius:50%;}
-    .notification-bell{width:35px;height:35px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:transform .2s;}
-    .notification-bell:hover{transform:scale(1.1);}
-    .logo-container{
-      width:35px;height:35px;background:linear-gradient(135deg,#5DD5C0 0%,#4AC4B0 100%);
-      border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;cursor:pointer;
-    }
-    .header-left{display:flex;align-items:center;gap:10px;}
-    .back-btn{
-      width:36px;height:36px;border-radius:9999px;border:1px solid var(--border-color);
-      background:var(--bg-container);display:flex;align-items:center;justify-content:center;
-      cursor:pointer;transition:background .15s,border-color .15s,transform .1s;
-    }
-    .back-btn:hover{background:var(--sidebar-active);}
-    .back-btn:active{transform:translateY(1px);}
-    .back-btn svg{width:18px;height:18px;color:var(--text-secondary);}
-
-    /* ============================================
-       PROFILE CONTAINER (one main card)
-       ============================================ */
-    .profile-container{
-      background-color:var(--bg-container);
-      border-radius:10px;
-      padding:30px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    /* MAIN GRID: Row1 => child | eval | therapy
-                   Row2 => diagnosis under child, payment across eval+therapy  */
-    .content-wrapper{
-      display:grid;
-      grid-template-columns:360px 1fr 380px;
-      grid-template-rows:auto auto;
+  @media (max-width: 1200px) {
+    .content-wrapper {
+      grid-template-columns: 1fr 1fr;
       grid-template-areas:
-        "child eval therapy"
-        "diag  payment payment";
-      column-gap:30px;
-      row-gap:30px;
-      align-items:start;
+        'child eval'
+        'therapy therapy'
+        'diag payment';
     }
 
-    .section{background:transparent;padding:0;min-width:0;}
-    .section-title{
-      font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:15px;
-      background-color:var(--primary-light);padding:12px 16px;border-radius:8px;
+    .payment-params {
+      grid-template-columns: repeat(3, 1fr);
     }
 
-    .child-section{grid-area:child;}
-    .eval-section{grid-area:eval;}
-    .therapy-section{grid-area:therapy;}
-    .diagnosis-section{grid-area:diag;}
-    .payment-section{grid-area:payment;}
+    .payment-boxes {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
 
-    /* --------------------------------------------
-       Child Information
-       -------------------------------------------- */
-    .child-info-grid{
-      display:grid;grid-template-columns:180px 1fr;gap:15px;align-items:start;min-width:0;
-    }
-    .child-avatar-section{
-      text-align:center;display:flex;flex-direction:column;gap:12px;
-    }
-    .child-avatar{
-      width:160px;height:160px;border-radius:50%;
-      background:linear-gradient(135deg,#FFB6C1 0%,#FFC0CB 100%);
-      margin:0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden;
-    }
-    .child-avatar img{width:100%;height:100%;object-fit:cover;}
-    .child-id{font-size:11px;color:var(--text-secondary);font-weight:600;text-align:center;padding:0 10px;}
-    .child-additional-info{display:flex;flex-direction:column;gap:10px;padding:0 10px;text-align:left;}
-
-    .child-details{display:grid;grid-template-columns:1fr;gap:12px;min-width:0;}
-    .detail-item{display:flex;flex-direction:column;gap:4px;text-align:left;}
-    .detail-label{font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;}
-
-    /* Chip-style input to match Evaluation values (same font, bg, radius) */
-    .detail-input{
-      font-size:12px;                 /* same as .eval-value */
-      color:var(--text-primary);
-      background-color:var(--status-update);
-      border:1px solid var(--border-color);
-      border-radius:6px;
-      padding:8px 12px;
-      outline:none;
-      height:36px;
-      line-height:20px;
-      box-shadow:inset 0 1px 0 rgba(0,0,0,0.02);
-      width:100%;
-    }
-    .detail-input:focus{
-      border-color:var(--primary-color);
-      box-shadow:0 0 0 3px var(--primary-light);
+  @media (max-width: 768px) {
+    .sidebar {
+      display: none;
     }
 
-    /* --------------------------------------------
-       About Evaluation
-       -------------------------------------------- */
-    .evaluation-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;min-width:0;}
-    .eval-item{display:flex;flex-direction:column;gap:6px;}
-    .eval-label{font-size:11px;font-weight:600;color:var(--text-secondary);}
-    .eval-value{
-      font-size:12px;color:var(--text-primary);
-      background-color:var(--status-update);
-      padding:8px 12px;border-radius:6px;
-      border:1px solid var(--border-color);
-      overflow-wrap:break-word;word-break:break-word;
-      min-height:36px;display:flex;align-items:center;
-    }
-    .evaluation-grid .eval-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-    /* --------------------------------------------
-       About Therapy
-       -------------------------------------------- */
-    .therapist-box{background-color:var(--primary-light);padding:10px 14px;border-radius:8px;margin-bottom:15px;}
-    .therapist-label{font-size:10px;color:var(--text-secondary);margin-bottom:4px;}
-    .therapist-name{font-size:13px;font-weight:600;color:var(--text-primary);}
-    .session-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:15px;}
-    .stat-box{background-color:var(--primary-light);padding:12px;border-radius:8px;text-align:center;}
-    .stat-label{font-size:10px;color:var(--text-secondary);margin-bottom:4px;}
-    .stat-value{font-size:20px;font-weight:700;color:var(--text-primary);}
-    .therapy-details{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
-
-    /* --------------------------------------------
-       Diagnosis (boxed)
-       -------------------------------------------- */
-    .diagnosis-container{
-      background-color:var(--bg-container);
-      border:1px solid var(--border-color);
-      border-radius:10px;padding:20px;
-    }
-    .diagnosis-header{
-      display:flex;align-items:center;gap:10px;margin-bottom:20px;
-      background-color:var(--primary-light);padding:12px 16px;border-radius:8px;
-    }
-    .diagnosis-title{font-size:16px;font-weight:600;color:var(--text-primary);flex:1;}
-    .file-upload-trigger{
-      display:inline-flex;align-items:center;justify-content:center;
-      width:32px;height:32px;border-radius:8px;border:1px solid var(--border-color);
-      background:var(--bg-dashboard);cursor:pointer;transition:background .15s ease;user-select:none;
-    }
-    .file-upload-trigger:hover{background:var(--sidebar-active);}
-    .file-upload-trigger svg{width:18px;height:18px;color:var(--text-primary);}
-    .upload-pill{
-      display:none;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);
-      background:var(--status-update);border:1px dashed var(--border-color);
-      padding:6px 10px;border-radius:999px;
-    }
-    .upload-pill.show{display:inline-flex;}
-    .diagnosis-content{display:grid;grid-template-columns:1fr;gap:15px;}
-    .diagnosis-field{display:flex;flex-direction:column;gap:6px;}
-    .diagnosis-field-label{font-size:11px;font-weight:600;color:var(--text-secondary);}
-    .diagnosis-field-value{
-      font-size:12px;color:var(--text-primary);
-      background-color:var(--status-update);
-      border:1px solid var(--border-color);
-      border-radius:6px;padding:8px 12px;min-height:36px;display:flex;align-items:center;
-      overflow-wrap:break-word;word-break:break-word;
+    .main-content {
+      margin-left: 0;
+      width: 100%;
     }
 
-    /* --------------------------------------------
-       Payment (aligned with Evaluation + Therapy)
-       -------------------------------------------- */
-    .payment-container{border:2px solid var(--border-color);border-radius:10px;padding:20px;}
-    .payment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
-    .payment-title{font-size:15px;font-weight:600;color:#4CAF50;}
-    .view-btn{
-      background-color:var(--bg-dashboard);border:1px solid var(--border-color);
-      padding:6px 14px;border-radius:6px;font-size:11px;color:var(--text-secondary);
-      cursor:pointer;transition:all .2s;
+    .searchbar {
+      width: 100%;
     }
-    .view-btn:hover{background-color:var(--sidebar-active);color:var(--text-primary);}
-    .payment-subtitle{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px;}
-    .payment-params{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:15px;min-width:0;}
-    .param-item{display:flex;flex-direction:column;gap:6px;}
-    .param-label{font-size:10px;color:var(--text-secondary);}
-    .param-value{
-      font-size:12px;color:var(--text-primary);background-color:var(--status-update);
-      padding:8px 10px;border-radius:6px;text-align:center;border:1px solid var(--border-color);min-height:36px;display:flex;align-items:center;justify-content:center;
-    }
-    .param-value.highlight{font-weight:600;}
-    .payment-boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
-    .payment-box{border:2px solid;border-radius:8px;padding:12px;text-align:center;}
-    .payment-box.dswd{border-color:#E91E63;}
-    .payment-box.remaining{border-color:#9C27B0;}
-    .payment-box.cash{border-color:#4CAF50;}
-    .payment-box.unpaid{border-color:#FF9800;}
-    .payment-box.digital{border-color:var(--border-color);}
-    .payment-box-label{font-size:10px;color:var(--text-secondary);margin-bottom:6px;}
-    .payment-box-amount{font-size:16px;font-weight:700;color:var(--text-primary);}
-    .payment-box-icon{font-size:24px;margin-bottom:4px;}
 
-    /* Modal */
-    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;}
-    .modal.active{display:flex;}
-    .modal-content{
-      background-color:var(--bg-container);border-radius:12px;padding:25px;
-      max-width:450px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.2);
+    .content-wrapper {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'child'
+        'eval'
+        'therapy'
+        'diag'
+        'payment';
     }
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-    .modal-title{font-size:16px;font-weight:600;}
-    .modal-close{background:none;border:none;font-size:22px;color:var(--text-secondary);cursor:pointer;padding:0;width:28px;height:28px;}
 
-    /* Responsive */
-    @media (max-width:1400px){
-      .content-wrapper{grid-template-columns:340px 1fr 340px;}
-      .payment-params{grid-template-columns:repeat(3,1fr);}
-      .payment-boxes{grid-template-columns:repeat(3,1fr);}
+    .child-info-grid {
+      grid-template-columns: 1fr;
     }
-    @media (max-width:1200px){
-      .content-wrapper{
-        grid-template-columns:1fr 1fr;
-        grid-template-areas:
-          "child eval"
-          "therapy therapy"
-          "diag  payment";
-      }
-      .payment-params{grid-template-columns:repeat(3,1fr);}
-      .payment-boxes{grid-template-columns:repeat(3,1fr);}
+
+    .child-avatar {
+      width: 140px;
+      height: 140px;
     }
-    @media (max-width:768px){
-      .sidebar{display:none;}
-      .main-content{margin-left:0;width:100%;}
-      .searchbar{width:100%;}
-      .content-wrapper{
-        grid-template-columns:1fr;
-        grid-template-areas:
-          "child"
-          "eval"
-          "therapy"
-          "diag"
-          "payment";
-      }
-      .child-info-grid{grid-template-columns:1fr;}
-      .child-avatar{width:140px;height:140px;}
-      .evaluation-grid{grid-template-columns:1fr;}
-      .payment-params{grid-template-columns:repeat(2,1fr);}
-      .payment-boxes{grid-template-columns:repeat(2,1fr);}
+
+    .evaluation-grid {
+      grid-template-columns: 1fr;
     }
-  </style>
+
+    .payment-params {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .payment-boxes {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
 </head>
 <body>
   <div class="dashboard-container">
@@ -354,23 +898,32 @@
         <div class="profile-avatar">J</div>
         <div class="profile-name">Jenny</div>
       </div>
+
       <nav class="nav-menu">
         <a href="staff_maindashboard.html" class="nav-item">Home</a>
         <a href="staff_childprofile.html" class="nav-item active">Child Profile</a>
-        <a href="staff_calendar.html" class="nav-item">Calendar</a>
+        <a href="staff_childspecificcalendar.html" class="nav-item">Calendar</a>
         <a href="staff_payment.html" class="nav-item">Payment</a>
 
         <div class="nav-item has-dropdown" onclick="toggleDropdown(this)">
           Report
           <div class="nav-dropdown">
-            <a href="staff_appointment-summary.html" class="nav-dropdown-item">Appointment Summary</a>
-            <a href="staff_payment-status-summary.html" class="nav-dropdown-item">Payment Status Summary</a>
-            <a href="staff_payment-type-summary.html" class="nav-dropdown-item">Payment Type Summary</a>
-            <a href="staff_management-table.html" class="nav-dropdown-item">Management Table</a>
+            <a href="staff_appointment-summary.html" class="nav-dropdown-item">
+              Appointment Summary
+            </a>
+            <a href="staff_payment-status-summary.html" class="nav-dropdown-item">
+              Payment Status Summary
+            </a>
+            <a href="staff_payment-type-summary.html" class="nav-dropdown-item">
+              Payment Type Summary
+            </a>
+            <a href="staff_management-table.html" class="nav-dropdown-item">
+              Management Table
+            </a>
           </div>
         </div>
 
-        <a href="logout.html" class="nav-item" style="margin-top:50px;">Log Out</a>
+        <a href="logout.html" class="nav-item" style="margin-top: 50px;">Log Out</a>
         <a href="staff_settings.html" class="nav-item">Settings</a>
       </nav>
     </aside>
@@ -380,22 +933,60 @@
       <!-- HEADER -->
       <header class="header">
         <div class="header-left">
-          <button class="back-btn" type="button" aria-label="Go back" onclick="handleBack()">
+          <button
+            class="back-btn"
+            type="button"
+            aria-label="Go back"
+            onclick="handleBack()"
+          >
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M15 6L9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M15 6L9 12l6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </button>
 
           <form class="searchbar" role="search" onsubmit="return false;">
             <button type="button" class="icon-left" aria-label="Search">
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                <path d="M11 4a7 7 0 1 1-4.95 11.95l-2.6 2.6a1 1 0 0 1-1.4-1.42l2.6-2.6A7 7 0 0 1 11 4Zm0 2a5 5 0 1 0 0 10A5 5 0 0 0 11 6Z" fill="currentColor"/>
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                aria-hidden="true"
+              >
+                <path
+                  d="M11 4a7 7 0 1 1-4.95 11.95l-2.6 2.6a1 1 0 0 1-1.4-1.42l2.6-2.6A7 7 0 0 1 11 4Zm0 2a5 5 0 1 0 0 10A5 5 0 0 0 11 6Z"
+                  fill="currentColor"
+                />
               </svg>
             </button>
-            <input type="text" placeholder="Search.." id="searchInput" autocomplete="off">
-            <button type="button" class="icon-right" aria-label="Open filters">
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                <path d="M4 7h8a2 2 0 1 0 0-2H4a2 2 0 0 0 0 2Zm0 12h8a2 2 0 1 0 0-2H4a2 2 0 0 0 0 2Zm16-7h-8a2 2 0 1 0 0 2h8a2 2 0 1 0 0-2Z" fill="currentColor"/>
+
+            <input
+              type="text"
+              placeholder="Search.."
+              id="searchInput"
+              autocomplete="off"
+            />
+
+            <button
+              type="button"
+              class="icon-right"
+              aria-label="Open filters"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 7h8a2 2 0 1 0 0-2H4a2 2 0 0 0 0 2Zm0 12h8a2 2 0 1 0 0-2H4a2 2 0 0 0 0 2Zm16-7h-8a2 2 0 1 0 0 2h8a2 2 0 1 0 0-2Z"
+                  fill="currentColor"
+                />
               </svg>
             </button>
           </form>
@@ -417,24 +1008,41 @@
           <!-- CHILD INFORMATION -->
           <section class="section child-section">
             <h2 class="section-title">Child Information</h2>
+
             <div class="child-info-grid">
               <div class="child-avatar-section">
                 <div class="child-avatar">
-                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='100' fill='%23FFB6C1'/%3E%3Ctext x='100' y='130' font-size='80' fill='white' text-anchor='middle' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E" alt="Child Avatar">
+                  <img
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='100' fill='%23FFB6C1'/%3E%3Ctext x='100' y='130' font-size='80' fill='white' text-anchor='middle' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E"
+                    alt="Child Avatar"
+                  />
                 </div>
-                <div class="child-id">Child ID<br><strong>001</strong></div>
+
+                <div class="child-id">
+                  Child ID<br />
+                  <strong>001</strong>
+                </div>
+
                 <div class="child-additional-info">
                   <div class="detail-item">
                     <span class="detail-label">Place of Birth</span>
-                    <span class="eval-value" id="birthPlace">Iloilo City, Philippines</span>
+                    <span class="eval-value" id="birthPlace">
+                      Iloilo City, Philippines
+                    </span>
                   </div>
+
                   <div class="detail-item">
                     <span class="detail-label">Home Address</span>
-                    <span class="eval-value" id="homeAddress">Divinagracia La Paz, Iloilo City</span>
+                    <span class="eval-value" id="homeAddress">
+                      Divinagracia La Paz, Iloilo City
+                    </span>
                   </div>
+
                   <div class="detail-item">
                     <span class="detail-label">Name of Guardian</span>
-                    <span class="eval-value" id="guardianName">Edna Boteros</span>
+                    <span class="eval-value" id="guardianName">
+                      Edna Boteros
+                    </span>
                   </div>
                 </div>
               </div>
@@ -442,65 +1050,97 @@
               <div class="child-details">
                 <div class="detail-item">
                   <span class="detail-label">First Name</span>
-                  <input type="text" class="detail-input" id="firstName" value="Sofia">
+                  <span class="eval-value" id="firstName">Sofia</span>
                 </div>
+
                 <div class="detail-item">
                   <span class="detail-label">Middle Name</span>
-                  <input type="text" class="detail-input" id="middleName" value="Andres">
+                  <span class="eval-value" id="middleName">Andres</span>
                 </div>
+
                 <div class="detail-item">
                   <span class="detail-label">Last Name</span>
-                  <input type="text" class="detail-input" id="lastName" value="Suarez">
+                  <span class="eval-value" id="lastName">Suarez</span>
                 </div>
+
                 <div class="detail-item">
                   <span class="detail-label">Birth Date</span>
-                  <input type="text" class="detail-input" id="birthDate" value="April 1, 2020">
+                  <span class="eval-value" id="birthDate">
+                    April 1, 2020
+                  </span>
                 </div>
+
                 <div class="detail-item">
                   <span class="detail-label">Age</span>
-                  <input type="text" class="detail-input" id="age" value="5">
+                  <span class="eval-value" id="age">5</span>
                 </div>
+
                 <div class="detail-item">
                   <span class="detail-label">Sex</span>
-                  <input type="text" class="detail-input" id="sex" value="Female">
+                  <span class="eval-value" id="sex">Female</span>
                 </div>
               </div>
             </div>
           </section>
 
           <!-- ABOUT EVALUATION -->
-          <section class="section eval-section">
-            <h2 class="section-title" style="background-color:#FFF9E6;">About Evaluation</h2>
+          <section class="section eval-section eval-section-offset">
+            <h2 class="section-title">About Evaluation</h2>
+
             <div class="evaluation-grid">
               <div class="eval-item">
                 <span class="eval-label">Evaluator</span>
-                <span class="eval-value" id="evaluator">Denise J. Celendro</span>
+                <span class="eval-value" id="evaluator">
+                  Denise J. Celendro
+                </span>
               </div>
+
               <div class="eval-item">
                 <span class="eval-label">Position</span>
-                <span class="eval-value" id="position">Head Occupational Therapist</span>
+                <span class="eval-value" id="position">
+                  Head Occupational Therapist
+                </span>
               </div>
+
               <div class="eval-item">
                 <span class="eval-label">Initial OT Evaluation</span>
-                <span class="eval-value" id="initialEval">March 20 18, 2025</span>
+                <span class="eval-value" id="initialEval">
+                  March 20 18, 2025
+                </span>
               </div>
+
               <div class="eval-item">
                 <span class="eval-label">Last Re-evaluation</span>
-                <span class="eval-value" id="lastReeval">March 20 18, 2025</span>
+                <span class="eval-value" id="lastReeval">
+                  March 20 18, 2025
+                </span>
               </div>
+
               <div class="eval-item">
                 <span class="eval-label">Scheduled Re-evaluation</span>
-                <span class="eval-value" id="scheduledReeval">March 20 18, 2025</span>
+                <span class="eval-value" id="scheduledReeval">
+                  March 20 18, 2025
+                </span>
               </div>
             </div>
           </section>
 
           <!-- ABOUT THERAPY -->
-          <section class="section therapy-section">
-            <h2 class="section-title">About Therapy</h2>
-                <div class="therapist-box">
-                <div class="therapist-label">Teacher/ Therapist</div>
-                <input type="text" class="detail-input" id="therapistName" value="Sheila Dela Cruz" />
+          <section class="section therapy-section eval-section-offset">
+            <div class="section-title-row">
+              <h2 class="section-title">About Therapy</h2>
+
+              <!-- Menu icon -->
+              <button class="therapy-menu-btn" type="button">
+                &#9776;
+              </button>
+            </div>
+
+            <div class="eval-item">
+              <span class="eval-label">Teacher/ Therapist</span>
+              <span class="eval-value" id="therapistName">
+                Sheila Dela Cruz
+              </span>
             </div>
 
             <div class="session-stats">
@@ -508,6 +1148,7 @@
                 <div class="stat-label">Total Session</div>
                 <div class="stat-value" id="totalSession">15</div>
               </div>
+
               <div class="stat-box">
                 <div class="stat-label">Attended Session</div>
                 <div class="stat-value" id="attendedSession">6</div>
@@ -519,17 +1160,26 @@
                 <span class="detail-label">Frequency</span>
                 <span class="eval-value" id="frequency">3x Weekly</span>
               </div>
+
               <div class="detail-item">
                 <span class="detail-label">Next Session</span>
-                <span class="eval-value" id="nextSession">March 20, 2025</span>
+                <span class="eval-value" id="nextSession">
+                  March 20, 2025
+                </span>
               </div>
+
               <div class="detail-item">
                 <span class="detail-label">Date Started</span>
-                <span class="eval-value" id="dateStarted">March 18, 2025</span>
+                <span class="eval-value" id="dateStarted">
+                  March 18, 2025
+                </span>
               </div>
+
               <div class="detail-item">
                 <span class="detail-label">End of Session</span>
-                <span class="eval-value" id="endSession">June 18, 2025</span>
+                <span class="eval-value" id="endSession">
+                  June 18, 2025
+                </span>
               </div>
             </div>
           </section>
@@ -539,16 +1189,64 @@
             <div class="diagnosis-container">
               <div class="diagnosis-header">
                 <h3 class="diagnosis-title">Diagnosis</h3>
-                <button id="diagUploadBtn" class="file-upload-trigger" type="button" title="Upload file (PNG, JPG, PDF)" aria-label="Upload diagnosis file">
-                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm1 2.5L18.5 8H15zM8 13h8a1 1 0 1 1 0 2H8a1 1 0 0 1 0-2zm0 4h6a1 1 0 1 1 0 2H8a1 1 0 0 1 0-2zm0-8h4a1 1 0 1 1 0 2H8a1 1 0 0 1 0-2z"/>
+
+                <button
+                  id="diagUploadBtn"
+                  class="file-upload-trigger"
+                  type="button"
+                  title="Upload file (PNG, JPG, PDF)"
+                  aria-label="Upload diagnosis file"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <path
+                      d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"
+                      stroke="#4D96FF"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M13 2v5h5"
+                      stroke="#4D96FF"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M9 14h6M9 10h3"
+                      stroke="#4D96FF"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 </button>
 
-                <input id="diagUploadInput" type="file" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf" style="display:none" />
-                <span id="diagUploadPill" class="upload-pill" aria-live="polite">
-                  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-                    <path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm1 2.5L18.5 8H15z"/>
+                <input
+                  id="diagUploadInput"
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
+                  style="display: none;"
+                />
+
+                <span
+                  id="diagUploadPill"
+                  class="upload-pill"
+                  aria-live="polite"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm1 2.5L18.5 8H15z"
+                    />
                   </svg>
                   <span id="diagFileName">No file</span>
                 </span>
@@ -557,19 +1255,23 @@
               <div class="diagnosis-content">
                 <div class="diagnosis-field">
                   <span class="diagnosis-field-label">Condition</span>
-                  <div class="diagnosis-field-value" id="diagnosis">Autism Spectrum Disorder (ASD) Level 2</div>
+                  <div class="diagnosis-field-value" id="diagnosis">
+                    Autism Spectrum Disorder (ASD) Level 2
+                  </div>
                 </div>
+
                 <div class="diagnosis-field">
                   <span class="diagnosis-field-label">Physician</span>
-                  <div class="diagnosis-field-value" id="physician">Dr. Marie De la Torre</div>
+                  <div class="diagnosis-field-value" id="physician">
+                    Dr. Marie De la Torre
+                  </div>
                 </div>
+
                 <div class="diagnosis-field">
                   <span class="diagnosis-field-label">Date of Diagnosis</span>
-                  <div class="diagnosis-field-value" id="diagnosisDate">February 15, 2025</div>
-                </div>
-                <div class="diagnosis-field">
-                  <span class="diagnosis-field-label">Notes</span>
-                  <div class="diagnosis-field-value" id="diagnosisNotes">Requires substantial support for social communication and repetitive behaviors</div>
+                  <div class="diagnosis-field-value" id="diagnosisDate">
+                    February 15, 2025
+                  </div>
                 </div>
               </div>
             </div>
@@ -580,38 +1282,74 @@
             <div class="payment-container">
               <div class="payment-header">
                 <h3 class="payment-title">Payment</h3>
-                <button class="view-btn" onclick="viewPaymentDetails()">View</button>
+                <button
+                  class="view-btn"
+                  type="button"
+                  onclick="viewPaymentDetails()"
+                >
+                  View
+                </button>
               </div>
 
               <h4 class="payment-subtitle">Payment Parameter</h4>
 
               <div class="payment-params">
-                <div class="param-item"><span class="param-label">Frequency</span><div class="param-value">3x / Week</div></div>
-                <div class="param-item"><span class="param-label">Total Balance</span><div class="param-value highlight">₱ 20,000.00</div></div>
-                <div class="param-item"><span class="param-label">Number of Weeks</span><div class="param-value">5</div></div>
-                <div class="param-item"><span class="param-label">Bill Session</span><div class="param-value">₱ 600.00</div></div>
-                <div class="param-item"><span class="param-label">Total Number of Session</span><div class="param-value">15</div></div>
-                <div class="param-item"><span class="param-label">Total Amount Paid</span><div class="param-value highlight">₱ 1,600.00</div></div>
+                <div class="param-item">
+                  <span class="param-label">Frequency</span>
+                  <div class="param-value">3x / Week</div>
+                </div>
+
+                <div class="param-item">
+                  <span class="param-label">Total Balance</span>
+                  <div class="param-value highlight">₱ 20,000.00</div>
+                </div>
+
+                <div class="param-item">
+                  <span class="param-label">Number of Weeks</span>
+                  <div class="param-value">5</div>
+                </div>
+
+                <div class="param-item">
+                  <span class="param-label">Bill Session</span>
+                  <div class="param-value">₱ 600.00</div>
+                </div>
+
+                <div class="param-item">
+                  <span class="param-label">Total Number of Session</span>
+                  <div class="param-value">15</div>
+                </div>
+
+                <div class="param-item">
+                  <span class="param-label">Total Amount Paid</span>
+                  <div class="param-value highlight">₱ 1,600.00</div>
+                </div>
               </div>
 
               <div class="payment-boxes">
                 <div class="payment-box dswd">
                   <div class="payment-box-icon">🏛️</div>
-                  <div class="payment-box-label">Grant Amount<br>DSWD</div>
+                  <div class="payment-box-label">
+                    Grant Amount<br />
+                    DSWD
+                  </div>
                   <div class="payment-box-amount">₱ 20,000.00</div>
                 </div>
+
                 <div class="payment-box remaining">
                   <div class="payment-box-label">Remaining Session</div>
                   <div class="payment-box-amount">₱ 9,000.00</div>
                 </div>
+
                 <div class="payment-box cash">
                   <div class="payment-box-label">Cash Payment</div>
                   <div class="payment-box-amount">₱ 600.00</div>
                 </div>
+
                 <div class="payment-box unpaid">
                   <div class="payment-box-label">Unpaid</div>
                   <div class="payment-box-amount">₱ 600.00</div>
                 </div>
+
                 <div class="payment-box digital">
                   <div class="payment-box-label">Digital</div>
                   <div class="payment-box-amount">₱ 0.00</div>
@@ -629,45 +1367,86 @@
     <div class="modal-content" role="document">
       <div class="modal-header">
         <div class="modal-title">Notifications</div>
-        <button class="modal-close" aria-label="Close" onclick="closeNotificationModal()">×</button>
+        <button class="modal-close" type="button" aria-label="Close" onclick="closeNotificationModal()">×</button>
       </div>
+
       <div class="modal-body">
-        <p style="text-align:center;padding:20px;color:var(--text-secondary);">No new notifications</p>
+        <p style="text-align: center; padding: 20px; color: var(--text-secondary);">No new notifications</p>
       </div>
     </div>
   </div>
 
   <script>
-    function handleBack(){ window.history.back(); }
-    function toggleDropdown(el){ el.classList.toggle('open'); el.querySelector('.nav-dropdown').classList.toggle('open'); }
-    function showNotifications(){ const m=document.getElementById('notifModal'); m.classList.add('active'); m.setAttribute('aria-hidden','false'); }
-    function closeNotificationModal(){ const m=document.getElementById('notifModal'); m.classList.remove('active'); m.setAttribute('aria-hidden','true'); }
-    document.addEventListener('click',(e)=>{ const m=document.getElementById('notifModal'); if(m&&m.classList.contains('active')&&e.target===m) closeNotificationModal(); });
-    document.addEventListener('keydown',(e)=>{ if(e.key==='Escape') closeNotificationModal(); });
+  function handleBack() {
+    window.history.back();
+  }
 
-    function viewPaymentDetails(){ alert('Payment details view - To be implemented'); }
+  function toggleDropdown(el) {
+    el.classList.toggle('open');
+    el.querySelector('.nav-dropdown').classList.toggle('open');
+  }
 
-    /* Diagnosis upload */
-    (function setupDiagnosisUpload(){
-      const btn=document.getElementById('diagUploadBtn');
-      const input=document.getElementById('diagUploadInput');
-      const pill=document.getElementById('diagUploadPill');
-      const nameSpan=document.getElementById('diagFileName');
+  function showNotifications() {
+    const modal = document.getElementById('notifModal');
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+  }
 
-      if(!btn) return;
-      btn.addEventListener('click',()=>input.click());
-      input.addEventListener('change',()=>{
-        const file=input.files&&input.files[0];
-        if(!file) return;
-        const ok=['image/png','image/jpeg','application/pdf'];
-        if(!ok.includes(file.type)){
-          alert('Invalid file type. Please upload PNG, JPG/JPEG, or PDF only.');
-          input.value=''; pill.classList.remove('show'); nameSpan.textContent='No file'; return;
-        }
-        const name=file.name.length>40 ? file.name.slice(0,18)+'…'+file.name.slice(-18) : file.name;
-        nameSpan.textContent=name; pill.classList.add('show');
-      });
-    })();
-  </script>
+  function closeNotificationModal() {
+    const modal = document.getElementById('notifModal');
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  document.addEventListener('click', (e) => {
+    const modal = document.getElementById('notifModal');
+    if (modal && modal.classList.contains('active') && e.target === modal) {
+      closeNotificationModal();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeNotificationModal();
+  });
+
+  function viewPaymentDetails() {
+    window.location.href = 'staff_childspecificcalendar.html';
+  }
+
+  /* Diagnosis Upload */
+  (function setupDiagnosisUpload() {
+    const btn = document.getElementById('diagUploadBtn');
+    const input = document.getElementById('diagUploadInput');
+    const pill = document.getElementById('diagUploadPill');
+    const nameSpan = document.getElementById('diagFileName');
+
+    if (!btn) return;
+
+    btn.addEventListener('click', () => input.click());
+
+    input.addEventListener('change', () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const allowed = ['image/png', 'image/jpeg', 'application/pdf'];
+      if (!allowed.includes(file.type)) {
+        alert('Invalid file type. Please upload PNG, JPG/JPEG, or PDF only.');
+        input.value = '';
+        pill.classList.remove('show');
+        nameSpan.textContent = 'No file';
+        return;
+      }
+
+      const shortened =
+        file.name.length > 40
+          ? file.name.slice(0, 18) + '…' + file.name.slice(-18)
+          : file.name;
+
+      nameSpan.textContent = shortened;
+      pill.classList.add('show');
+    });
+  })();
+</script>
+
 </body>
 </html>
