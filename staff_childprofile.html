@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Child Profile - iChildren</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    /* ==========================================
+       CSS VARIABLES
+       ========================================== */
+    :root {
+      /* Primary Colors */
+      --primary-color: #5DD5C0;
+      --primary-light: #E8F9F6;
+      
+      /* Accent Colors */
+      --accent-orange: #FF9D5C;
+      --accent-red: #FF6B6B;
+      --accent-blue: #4D96FF;
+      --accent-yellow: #FFD93D;
+      --accent-purple: #9D5CFF;
+      
+      /* Status Colors */
+      --status-queue: #E3F2FD;
+      --status-queue-text: #1976D2;
+      --status-update: #F5F5F5;
+      --status-update-text: #6B7280;
+      
+      /* Background Colors */
+      --bg-dashboard: #F9F9F9;
+      --bg-container: #FFFFFF;
+      
+      /* Text Colors */
+      --text-primary: #2C3E50;
+      --text-secondary: #7F8C8D;
+      
+      /* UI Colors */
+      --border-color: #E0E0E0;
+      --sidebar-active: #F2F2F2;
+      --online-green: #4CAF50;
+    }
+
+    /* ==========================================
+       GLOBAL RESET
+       ========================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      color: var(--text-primary);
+      background: var(--bg-dashboard);
+    }
+
+    /* ==========================================
+       LAYOUT
+       ========================================== */
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-content {
+      margin-left: 180px;
+      padding: 20px 30px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* ==========================================
+       SIDEBAR
+       ========================================== */
+    .sidebar {
+      width: 180px;
+      background: var(--bg-container);
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .profile-section {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .profile-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Navigation */
+    .nav-item {
+      display: block;
+      text-decoration: none;
+      color: var(--text-secondary);
+      padding: 10px 15px;
+      margin-bottom: 5px;
+      font-size: 12px;
+      border-radius: 6px;
+      transition: 0.2s;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: var(--sidebar-active);
+      color: var(--text-primary);
+    }
+
+    .nav-item.has-dropdown::after {
+      content: '▼';
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 8px;
+      transition: 0.2s;
+    }
+
+    .nav-item.has-dropdown.open::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .nav-dropdown {
+      display: none;
+      margin-top: 5px;
+    }
+
+    .nav-dropdown.open {
+      display: block;
+    }
+
+    .nav-dropdown-item {
+      display: block;
+      text-decoration: none;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      border-radius: 4px;
+      margin-bottom: 3px;
+      transition: 0.2s;
+      text-align: center;
+    }
+
+    .nav-dropdown-item:hover {
+      background: var(--bg-dashboard);
+      color: var(--text-primary);
+    }
+
+    /* ==========================================
+       HEADER
+       ========================================== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    /* Search Bar */
+    .searchbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 40px;
+      width: 320px;
+      padding: 0 10px 0 12px;
+      background: var(--bg-container);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+      transition: 0.15s;
+    }
+
+    .searchbar:focus-within {
+      border-color: #d0d7de;
+      box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    .searchbar input {
+      flex: 1;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font-size: 12px;
+    }
+
+    .searchbar .icon-left,
+    .searchbar .icon-right {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .searchbar .icon-left:hover,
+    .searchbar .icon-right:hover {
+      background: var(--bg-dashboard);
+      color: var(--text-primary);
+    }
+
+    /* Header Right Section */
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .online-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--online-green);
+      border-radius: 50%;
+    }
+
+    .notification-bell {
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    .notification-bell:hover {
+      transform: scale(1.1);
+    }
+
+    .logo-container {
+      width: 35px;
+      height: 35px;
+      background: linear-gradient(135deg, #5DD5C0 0%, #4AC4B0 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ==========================================
+       KPI SECTION
+       ========================================== */
+    .kpi-section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .kpi-card {
+      background: var(--bg-container);
+      min-height: 88px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .kpi-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .kpi-date {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* ==========================================
+       ACCOUNT CREATION
+       ========================================== */
+    .account-creation {
+      background: var(--bg-container);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .account-creation h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .account-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-account {
+      flex: 1;
+      padding: 12px 20px;
+      background: var(--bg-container);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-account:hover {
+      border-color: var(--primary-color);
+      background: var(--primary-light);
+      color: var(--primary-color);
+    }
+
+    .arrow-icon {
+      font-size: 20px;
+      color: var(--primary-color);
+    }
+
+    .no-underline {
+      text-decoration: none !important;
+      color: var(--text-primary);
+    }
+
+    .no-underline:hover {
+      text-decoration: none !important;
+    }
+
+    /* ==========================================
+       CONTENT GRID & CARDS
+       ========================================== */
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .card {
+      background: var(--bg-container);
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    /* ==========================================
+       ACCOUNT ITEMS (Recent Modified)
+       ========================================== */
+    .account-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border-color);
+      transition: 0.2s;
+    }
+
+    .account-item:hover {
+      background: var(--bg-dashboard);
+    }
+
+    .account-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      flex-shrink: 0;
+    }
+
+    .account-info {
+      flex: 1;
+    }
+
+    .account-name {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .account-meta {
+      display: flex;
+      gap: 10px;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .account-badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 600;
+    }
+
+    .badge-level {
+      background: #FFF3E0;
+      color: #F57C00;
+    }
+
+    .account-timestamp {
+      font-size: 9px;
+      color: var(--text-secondary);
+    }
+
+    /* ==========================================
+       FILTER BAR & CHIPS
+       ========================================== */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      background: var(--bg-container);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--primary-light);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .filter-input {
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 11px;
+      outline: none;
+    }
+
+    .filter-input:focus {
+      border-color: var(--primary-color);
+    }
+
+    /* Chip Filter */
+    .chip-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+    }
+
+    .chip-filter:hover {
+      background: #eeeeee;
+      border-color: #d1d5db;
+    }
+
+    .chip-filter.active {
+      background: var(--primary-light);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .chip-filter svg {
+      width: 14px;
+      height: 14px;
+      stroke: #6b7280;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .chip-filter.active svg {
+      stroke: var(--primary-color);
+    }
+
+    /* ==========================================
+       MISSED SESSION FILTER POPOVER
+       ========================================== */
+    .ms-card {
+      position: relative;
+    }
+
+    .ms-filter {
+      position: absolute;
+      top: 52px;
+      right: 18px;
+      width: 280px;
+      z-index: 20;
+      background: var(--bg-container);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(16, 24, 40, 0.12);
+      padding: 14px 14px 12px;
+      display: none;
+    }
+
+    .ms-filter.show {
+      display: block;
+    }
+
+    .ms-filter:before {
+      content: "";
+      position: absolute;
+      top: -7px;
+      right: 36px;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-left: 1px solid var(--border-color);
+      border-top: 1px solid var(--border-color);
+      transform: rotate(45deg);
+    }
+
+    .ms-filter .hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .ms-filter .hdr h4 {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .ms-filter .hdr button {
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      color: #9CA3AF;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .ms-field {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .ms-field label {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .ms-select,
+    .ms-date {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 12px;
+      background: #fff;
+      color: var(--text-primary);
+    }
+
+    .ms-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn-clear {
+      padding: 8px 14px;
+      border-radius: 9999px;
+      background: #efefef;
+      color: #4b5563;
+      border: 1px solid #e5e7eb;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-apply {
+      padding: 8px 14px;
+      border-radius: 9999px;
+      background: #cfeaf0;
+      color: #2563eb;
+      border: 1px solid #bcdde8;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ==========================================
+       TABS
+       ========================================== */
+    .tabs {
+      display: flex;
+      gap: 3px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 15px;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+      transition: 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--primary-color);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary-color);
+    }
+
+    /* ==========================================
+       TABLE
+       ========================================== */
+    .table-container {
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      background: var(--bg-container);
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    td {
+      padding: 10px 8px;
+      font-size: 11px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #F5F5F5;
+      transition: 0.2s;
+    }
+
+    tbody tr:hover {
+      background: var(--bg-dashboard);
+    }
+
+    /* Hide Reason column for Active/New */
+    .account-list-table.table-hide-reason th:nth-child(6),
+    .account-list-table.table-hide-reason td:nth-child(6) {
+      display: none;
+    }
+
+    /* ==========================================
+       STAT BOXES WITH GLOWY EFFECT
+       ========================================== */
+    .stat-box {
+      position: relative;
+      background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 
+        0 0 0 1px rgba(93, 213, 192, 0.10),
+        0 8px 18px rgba(17, 24, 39, 0.06);
+    }
+
+    .stat-box::after {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border-radius: 14px;
+      background: linear-gradient(
+        135deg,
+        rgba(93, 213, 192, 0.35) 0%,
+        rgba(77, 150, 255, 0.22) 50%,
+        rgba(255, 217, 61, 0.18) 100%
+      );
+      filter: blur(14px);
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .stat-box.yellow {
+      border-left: 4px solid var(--accent-yellow);
+    }
+
+    .stat-box.yellow::after {
+      background: linear-gradient(
+        135deg,
+        rgba(255, 217, 61, 0.35) 0%,
+        rgba(93, 213, 192, 0.25) 70%
+      );
+    }
+
+    .stat-box.blue {
+      border-left: 4px solid var(--accent-blue);
+    }
+
+    .stat-box.blue::after {
+      background: linear-gradient(
+        135deg,
+        rgba(77, 150, 255, 0.35) 0%,
+        rgba(93, 213, 192, 0.22) 70%
+      );
+    }
+
+    .stat-input {
+      width: 84px;
+      padding: 8px 10px;
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      box-shadow: none;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    #aaActive {
+      border-color: #FFD93D;
+      box-shadow: 0 0 0 2px rgba(255, 217, 61, 0.25);
+    }
+
+    #aaNew {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(93, 213, 192, 0.25);
+    }
+
+    #aaInactive {
+      border-color: #2B4A7C;
+      box-shadow: 0 0 0 2px rgba(43, 74, 124, 0.18);
+    }
+
+    #aaArchive {
+      border-color: #9CA3AF;
+      box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.20);
+    }
+
+    /* ==========================================
+       APPOINTMENT & SESSION CARD
+       ========================================== */
+    .aps-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px 14px;
+      width: 100%;
+      max-width: 320px;
+      box-shadow: 0 8px 18px rgba(17, 24, 39, 0.06);
+      margin: 10px auto;
+    }
+
+    .aps-title {
+      text-align: center;
+      color: #2b6cb0;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .aps-content {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 12px;
+      align-items: start;
+    }
+
+    .aps-divider {
+      width: 1px;
+      background: #dcdfe4;
+      border-radius: 1px;
+      height: 100%;
+      margin: 2px 0;
+    }
+
+    .aps-rows {
+      display: grid;
+      row-gap: 10px;
+    }
+
+    .aps-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .aps-row .label {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .aps-input {
+      width: 72px;
+      padding: 6px 10px;
+      background: #fff;
+      text-align: center;
+      font-weight: 700;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      box-shadow: none;
+    }
+
+    #apsAttended {
+      border-color: #FFD93D;
+      box-shadow: 0 0 0 2px rgba(255, 217, 61, 0.22);
+    }
+
+    #apsMissed {
+      border-color: #2B4A7C;
+      box-shadow: 0 0 0 2px rgba(43, 74, 124, 0.18);
+    }
+
+    /* ==========================================
+       ACCOUNT ACTIVITY CARD
+       ========================================== */
+    .aa-card {
+      position: relative;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px 16px 12px 16px;
+      box-shadow: 0 8px 18px rgba(17, 24, 39, 0.06);
+      max-width: 320px;
+    }
+
+    .aa-card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      justify-content: center;
+    }
+
+    .aa-head-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6fb7ff 0%, #3aa3ff 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .aa-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2b6cb0;
+    }
+
+    .aa-content {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 14px;
+      align-items: start;
+    }
+
+    .aa-divider {
+      width: 1px;
+      background: #dcdfe4;
+      border-radius: 1px;
+      height: 100%;
+      margin: 2px 0;
+    }
+
+    .aa-rows {
+      display: grid;
+      row-gap: 12px;
+    }
+
+    .aa-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .aa-row .label {
+      color: var(--text-secondary);
+      font-size: 11px;
+    }
+
+    /* Account Activity Filter Popover */
+    .aa-filter {
+      position: relative;
+      display: inline-block;
+    }
+
+    .aa-panel {
+      position: absolute;
+      top: 36px;
+      right: 0;
+      width: 220px;
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(16, 24, 40, 0.12);
+      padding: 12px;
+      display: none;
+      z-index: 15;
+    }
+
+    .aa-panel.show {
+      display: block;
+    }
+
+    .aa-panel .hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .aa-panel .hdr h4 {
+      font-size: 12px;
+    }
+
+    .aa-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .aa-option:hover {
+      background: #f3f4f6;
+    }
+
+    .aa-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    /* ==========================================
+       CHARTS LAYOUT
+       ========================================== */
+    .left-col,
+    .right-col {
+      min-width: 0;
+    }
+
+    .left-shelf {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      min-width: 0;
+    }
+
+    .left-shelf .aa-card {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .donut-box {
+      width: 240px;
+      max-width: 240px;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 0;
+    }
+
+    .donut-box .chart-container {
+      height: 220px;
+      padding: 0;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chart-container {
+      height: 420px;
+      width: 100%;
+      position: relative;
+      padding: 10px;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chart-small {
+      height: 260px;
+    }
+
+    .chart-nav {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: 0.15s;
+      user-select: none;
+    }
+
+    .chart-nav:hover {
+      background: var(--primary-light);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      transform: scale(1.05);
+    }
+
+    .chart-nav:active {
+      transform: scale(0.96);
+    }
+
+    .chart-container > canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* ==========================================
+       UTILITY CLASSES
+       ========================================== */
+    .hidden {
+      display: none !important;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* ==========================================
+       RESPONSIVE
+       ========================================== */
+    @media (max-width: 1200px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .kpi-section {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <!-- ==========================================
+         SIDEBAR
+         ========================================== -->
+    <aside class="sidebar">
+      <div class="profile-section">
+        <div class="profile-avatar">J</div>
+        <div class="profile-name">Jenny</div>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="staff_maindashboard.html" class="nav-item active">Home</a>
+        <a href="staff_childprofile.html" class="nav-item">Child Profile</a>
+        <a href="staff_calendar.html" class="nav-item">Calendar</a>
+        <a href="staff_payment.html" class="nav-item">Payment</a>
+
+        <div class="nav-item has-dropdown" onclick="toggleDropdown(this)">
+          Report
+          <div class="nav-dropdown">
+            <a href="staff_appointment-summary" class="nav-dropdown-item">Appointment Summary</a>
+            <a href="staff_payment-status-summary" class="nav-dropdown-item">Payment Status Summary</a>
+            <a href="staff_payment-type-summary" class="nav-dropdown-item">Payment Type Summary</a>
+            <a href="staff_management-table" class="nav-dropdown-item">Management Table</a>
+          </div>
+        </div>
+
+        <a href="logout" class="nav-item" style="margin-top:50px;">Log Out</a>
+        <a href="staff_settings" class="nav-item">Settings</a>
+      </nav>
+    </aside>
+
+    <!-- ==========================================
+         MAIN CONTENT
+         ========================================== -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <form class="searchbar" onsubmit="return false;">
+          <button type="button" class="icon-left" aria-label="Search">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M11 4a7 7 0 1 1-4.95 11.95l-2.6 2.6a1 1 0 0 1-1.4-1.42l2.6-2.6A7 7 0 0 1 11 4Zm0 2a5 5 0 1 0 0 10A5 5 0 0 0 11 6Z" fill="currentColor"/>
+            </svg>
+          </button>
+          <input id="searchInput" placeholder="Search..." autocomplete="off"/>
+          <button type="button" class="icon-right" aria-label="Open filters">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M4 7h8a2 2 0 1 0 0-2H4a2 2 0 0 0 0 2Zm0 12h8a2 2 0 1 0 0-2H4a2 2 0 0 0 0 2Zm16-7h-8a2 2 0 1 0 0 2h8a2 2 0 1 0 0-2Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="header-right">
+          <div class="online-status">
+            <span class="status-dot"></span>
+            <span>Online</span>
+          </div>
+          <div class="notification-bell" onclick="showNotifications()">🔔</div>
+          <div class="logo-container" title="iChildren">iC</div>
+        </div>
+      </header>
+
+      <!-- KPI Section -->
+      <section class="kpi-section">
+        <div class="kpi-card">
+          <div class="kpi-icon">📅</div>
+          <div class="kpi-content">
+            <div class="kpi-label">Date Today</div>
+            <div class="kpi-date" id="todayDate"></div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-content">
+            <div class="kpi-label">Total Child Account</div>
+            <div class="kpi-value" id="totalChildren">100</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon">📁</div>
+          <div class="kpi-content">
+            <div class="kpi-label">Inactive Accounts</div>
+            <div class="kpi-value" id="inactiveAccounts">20</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Account Creation -->
+      <section class="account-creation">
+        <h3>Create Account Here</h3>
+        <div class="account-buttons">
+          <a href="staff_parentregistration.html" class="btn-account no-underline">
+            Create Parent Account
+          </a>
+          <span class="arrow-icon">➜</span>
+          <a href="#" class="btn-account no-underline">
+            Create Child Account
+          </a>
+        </div>
+      </section>
+
+      <!-- Recent Modified Accounts & Missed Sessions -->
+      <div class="content-grid">
+        <!-- Recent Modified Accounts -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Modified Accounts</h2>
+          </div>
+          <div id="recentAccountsList"></div>
+        </div>
+
+        <!-- Missed Session & Evaluation -->
+        <div class="card ms-card" id="missedCard">
+          <div class="card-header">
+            <h2 class="card-title">Missed Session and Evaluation</h2>
+            <button type="button" class="chip-filter" onclick="toggleMsFilter(this)">
+              <svg viewBox="0 0 24 24">
+                <path d="M3 6h18M7 12h10M10 18h4"/>
+              </svg>
+              <span>Filter</span>
+            </button>
+          </div>
+
+          <!-- Filter Popover -->
+          <div class="ms-filter">
+            <div class="hdr">
+              <h4>Filter</h4>
+              <button type="button" aria-label="Close" onclick="closeMsFilter(this)">✕</button>
+            </div>
+
+            <div class="ms-field">
+              <label>Department</label>
+              <select class="ms-select" id="msDept">
+                <option value="">All</option>
+                <option value="OT">OT (Occupational Therapy)</option>
+                <option value="PT">PT (Physical Therapy)</option>
+              </select>
+            </div>
+
+            <div class="ms-field">
+              <label>Teacher</label>
+              <select class="ms-select" id="msTeacher">
+                <option value="">All</option>
+                <option value="Ms. Sheila">Ms. Sheila</option>
+                <option value="Ms. Audrey">Ms. Audrey</option>
+                <option value="Mr. Eni">Mr. Eni</option>
+              </select>
+            </div>
+
+            <div class="ms-field">
+              <label>Date</label>
+              <input type="date" class="ms-date" id="msDate">
+            </div>
+
+            <div class="ms-footer">
+              <button type="button" class="btn-clear" onclick="clearMsFilter()">Clear</button>
+              <button type="button" class="btn-apply" onclick="applyMsFilter()">Apply</button>
+            </div>
+          </div>
+
+          <!-- Appointment Stats Card -->
+          <div class="aps-card">
+            <div class="aps-title">Appointment and Session</div>
+            <div class="aps-content">
+              <div class="aps-divider"></div>
+              <div class="aps-rows">
+                <div class="aps-row">
+                  <span class="label">Attended</span>
+                  <input type="number" id="apsAttended" class="aps-input" value="5" readonly>
+                </div>
+                <div class="aps-row">
+                  <span class="label">Missed</span>
+                  <input type="number" id="apsMissed" class="aps-input" value="2" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Show Filter: All / Attended / Missed -->
+          <div class="filter-bar" id="msShowBar" style="align-items:center">
+            <div style="font-size:11px;font-weight:600;color:var(--text-primary);margin-right:6px">
+              Show
+            </div>
+
+            <label style="display:inline-flex;align-items:center;gap:6px">
+              <input type="radio" name="msShow" value="all" checked>
+              <span>All</span>
+            </label>
+
+            <label style="display:inline-flex;align-items:center;gap:6px">
+              <input type="radio" name="msShow" value="attended">
+              <span>Attended</span>
+            </label>
+
+            <label style="display:inline-flex;align-items:center;gap:6px">
+              <input type="radio" name="msShow" value="missed">
+              <span>Missed</span>
+            </label>
+          </div>
+
+          <!-- Missed Sessions Table -->
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                  <th>Child Name</th>
+                  <th>Purpose</th>
+                  <th>Teacher</th>
+                </tr>
+              </thead>
+              <tbody id="missedSessionsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manage Account Section -->
+      <div class="card full-width" style="margin-top:20px;">
+        <div class="card-header">
+          <h2 class="card-title">Manage Account</h2>
+          <button type="button" class="chip-filter" onclick="void 0;">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 6h18M7 12h10M10 18h4"/>
+            </svg>
+            <span>Filter</span>
+          </button>
+        </div>
+
+        <!-- Month/Year Filter -->
+        <div class="filter-bar">
+          <label style="font-size:11px;font-weight:600">Show</label>
+          <select class="filter-input" id="showMonth">
+            <option>January</option>
+            <option>February</option>
+            <option>March</option>
+          </select>
+          <select class="filter-input" id="showYear">
+            <option selected>2025</option>
+            <option>2024</option>
+          </select>
+        </div>
+
+        <!-- Charts Row: Account Activity + Donut (left) | Bar Chart (right) -->
+        <div class="content-grid" style="margin-top:20px">
+          <!-- Left Column: Account Activity Card + Donut Chart -->
+          <div class="left-col">
+            <div class="left-shelf">
+              <!-- Account Activity Card -->
+              <div class="aa-card">
+                <div class="aa-card-head">
+                  <div class="aa-head-icon">👤</div>
+                  <div class="aa-title">Account Activity</div>
+                </div>
+
+                <!-- Change Source Filter -->
+                <div style="display:flex; justify-content:flex-end; margin:-4px 0 10px 0;">
+                  <div class="aa-filter">
+                    <button class="chip-filter" id="aaFilterBtn" onclick="toggleAAFilter()">
+                      Change Source
+                    </button>
+                    <div class="aa-panel" id="aaPanel">
+                      <div class="hdr">
+                        <h4>Select Source</h4>
+                        <button type="button" onclick="toggleAAFilter()">✕</button>
+                      </div>
+                      <div class="aa-option" onclick="setAAFilter('overall')">
+                        <input type="radio" name="aa" checked> Overall
+                      </div>
+                      <div class="aa-option" onclick="setAAFilter('DSWD')">
+                        <input type="radio" name="aa"> DSWD
+                      </div>
+                      <div class="aa-option" onclick="setAAFilter('Independent')">
+                        <input type="radio" name="aa"> Independent
+                      </div>
+                      <div class="aa-actions">
+                        <button class="btn-clear" onclick="resetAAFilter()">Clear</button>
+                        <button class="btn-apply" onclick="applyAAFilter()">Apply</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Account Activity Stats -->
+                <div class="aa-content">
+                  <div class="aa-divider"></div>
+                  <div class="aa-rows" id="aaTiles">
+                    <div class="aa-row">
+                      <span class="label">Active</span>
+                      <input class="stat-input" id="aaActive" value="85" readonly>
+                    </div>
+                    <div class="aa-row">
+                      <span class="label">New</span>
+                      <input class="stat-input" id="aaNew" value="1" readonly>
+                    </div>
+                    <div class="aa-row">
+                      <span class="label">Inactive</span>
+                      <input class="stat-input" id="aaInactive" value="5" readonly>
+                    </div>
+                    <div class="aa-row">
+                      <span class="label">Archive</span>
+                      <input class="stat-input" id="aaArchive" value="2" readonly>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Donut Chart -->
+              <div class="donut-box">
+                <div class="chart-container">
+                  <canvas id="accountDonut"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Bar Chart with Navigation -->
+          <div class="right-col">
+            <div class="chart-wrapper" style="gap:8px">
+              <button class="chart-nav" onclick="navigateBarYear('prev')" aria-label="Previous year">
+                ‹
+              </button>
+              <div class="chart-container chart-small">
+                <canvas id="accountBar"></canvas>
+              </div>
+              <button class="chart-nav" onclick="navigateBarYear('next')" aria-label="Next year">
+                ›
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account List -->
+        <div style="margin-top:25px">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:15px">Account List</h3>
+
+          <!-- Status Tabs -->
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchAccountTab('active', event)">
+              Active
+            </button>
+            <button class="tab-btn" onclick="switchAccountTab('archived', event)">
+              Archived
+            </button>
+            <button class="tab-btn" onclick="switchAccountTab('inactive', event)">
+              Inactive
+            </button>
+            <button class="tab-btn" onclick="switchAccountTab('new', event)">
+              New
+            </button>
+          </div>
+
+          <!-- Year & Source Filters -->
+          <div class="filter-bar">
+            <label style="font-size:11px;font-weight:600">Year</label>
+            <select class="filter-input" id="yearFilter"></select>
+
+            <button class="filter-btn account-source-btn active" data-source="all" onclick="setPaymentFilter('all', event)">
+              All 📊
+            </button>
+            <button class="filter-btn account-source-btn" data-source="DSWD" onclick="setPaymentFilter('DSWD', event)">
+              DSWD 🏛️
+            </button>
+            <button class="filter-btn account-source-btn" data-source="Independent" onclick="setPaymentFilter('Independent', event)">
+              Independent 💵
+            </button>
+          </div>
+
+          <!-- Account List Table -->
+          <div class="table-container" style="margin-top:15px">
+            <table class="account-list-table">
+              <thead>
+                <tr>
+                  <th>Date Last Active</th>
+                  <th>Name</th>
+                  <th>Parent/Guardian</th>
+                  <th>Teacher</th>
+                  <th>Balance</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody id="accountListTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /* ==========================================
+       SEED DATA
+       ========================================== */
+    const seedData = {
+      recentAccounts: [
+        {
+          id: 1,
+          name: 'Mark Hervana',
+          age: '8 years old',
+          level: 'ASD Level 2',
+          therapist: 'Ms. Sheila Dale Cruz',
+          lastViewed: '1 min ago'
+        },
+        {
+          id: 2,
+          name: 'Sofia Andres',
+          age: '9 years old',
+          level: 'ASD Level 2',
+          therapist: 'Ms. Sheila Dale Cruz',
+          lastViewed: '1 min ago'
+        },
+        {
+          id: 3,
+          name: 'John Arias',
+          age: '8 years old',
+          level: 'ASD Level 2',
+          therapist: 'Ms. Eni Dela Cruz',
+          lastViewed: '1 min ago'
+        }
+      ],
+
+      missedSessions: [
+        {
+          date: '2025-04-01',
+          time: '8:30 - 10:00 AM',
+          status: 'Missed',
+          childName: 'Mike Hervana',
+          purpose: 'Individual Session',
+          teacher: 'Ms. Sheila',
+          department: 'OT'
+        },
+        {
+          date: '2025-04-01',
+          time: '8:30 - 11:30 AM',
+          status: 'Missed',
+          childName: 'Sofia Andres',
+          purpose: 'Individual Session',
+          teacher: 'Ms. Sheila',
+          department: 'OT'
+        },
+        {
+          date: '2025-04-03',
+          time: '1:00 - 2:00 PM',
+          status: 'Attended',
+          childName: 'Maria Clara',
+          purpose: 'Group Session',
+          teacher: 'Ms. Audrey',
+          department: 'PT'
+        },
+        {
+          date: '2025-04-05',
+          time: '9:00 - 10:00 AM',
+          status: 'Missed',
+          childName: 'John Arias',
+          purpose: 'Individual Session',
+          teacher: 'Mr. Eni',
+          department: 'SP'
+        }
+      ],
+
+      accountList: [
+        {
+          dueDate: '04/01/2025',
+          name: 'Mark Hervana',
+          guardian: 'Marie Tan',
+          teacher: 'Ms. Sheila C.',
+          balance: '₱ 0.00',
+          reason: '',
+          status: 'active',
+          source: 'Independent'
+        },
+        {
+          dueDate: '03/15/2025',
+          name: 'Sofia Andres',
+          guardian: 'Marie Anton',
+          teacher: 'Ms. Audrey T.',
+          balance: '₱ 200.00',
+          reason: '',
+          status: 'active',
+          source: 'DSWD'
+        },
+        {
+          dueDate: '12/20/2024',
+          name: 'Emma Arias',
+          guardian: 'Aesan Oh',
+          teacher: 'Ms. Mark D.',
+          balance: '₱ 0.00',
+          reason: 'Financial',
+          status: 'archived',
+          source: 'Independent'
+        },
+        {
+          dueDate: '10/10/2023',
+          name: 'Maria Clara',
+          guardian: 'Marie Tan',
+          teacher: 'Mr. Eni D.',
+          balance: '₱ 1,800.00',
+          reason: 'Financial',
+          status: 'inactive',
+          source: 'DSWD'
+        },
+        {
+          dueDate: '04/02/2025',
+          name: 'Liam Cruz',
+          guardian: 'Ana Cruz',
+          teacher: 'Ms. Sheila C.',
+          balance: '₱ 0.00',
+          reason: '',
+          status: 'new',
+          source: 'Independent'
+        }
+      ]
+    };
+
+    /* Overall Account Activity baseline */
+    const accountActivityBase = {
+      overall: { active: 85, new: 1, inactive: 5, archive: 2 },
+      DSWD: { active: 30, new: 0, inactive: 3, archive: 1 },
+      Independent: { active: 55, new: 1, inactive: 2, archive: 1 }
+    };
+
+    /* ==========================================
+       UTILITY FUNCTIONS
+       ========================================== */
+    const getTodayFormatted = () =>
+      new Date().toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+    function formatDateForDisplay(iso) {
+      const d = new Date(iso + 'T00:00:00');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const yy = d.getFullYear();
+      return `${mm}/${dd}/${yy}`;
+    }
+
+    function getYearFromDueDate(mmddyyyy) {
+      const d = new Date(mmddyyyy + ' 00:00:00');
+      if (!isNaN(d)) return d.getFullYear();
+      const [, , yyyy] = mmddyyyy.split('/');
+      return parseInt(yyyy, 10);
+    }
+
+    /* ==========================================
+       RENDER FUNCTIONS
+       ========================================== */
+    function renderRecentAccounts() {
+      const container = document.getElementById('recentAccountsList');
+      container.innerHTML = seedData.recentAccounts.map(account => `
+        <div class="account-item">
+          <div class="account-avatar"></div>
+          <div class="account-info">
+            <div class="account-name">${account.name}</div>
+            <div class="account-meta">
+              <span>001</span>
+              <span>${account.age}</span>
+              <span class="account-badge badge-level">${account.level}</span>
+            </div>
+            <div style="font-size:10px;color:var(--text-secondary);margin-top:3px">
+              OT: ${account.therapist}
+            </div>
+            <div class="account-timestamp">Last viewed ${account.lastViewed}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderMissedSessions(rows = seedData.missedSessions) {
+      const tbody = document.getElementById('missedSessionsTable');
+      tbody.innerHTML = rows.map(session => `
+        <tr>
+          <td>${formatDateForDisplay(session.date)}</td>
+          <td>${session.time}</td>
+          <td>
+            <span style="color:${session.status === 'Missed' ? 'var(--accent-red)' : '#16a34a'};font-weight:600">
+              ${session.status}
+            </span>
+          </td>
+          <td>${session.childName}</td>
+          <td>${session.purpose}</td>
+          <td>${session.teacher}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAccountListFiltered(rows) {
+      const tbody = document.getElementById('accountListTable');
+      tbody.innerHTML = rows.map(account => `
+        <tr>
+          <td>${account.dueDate}</td>
+          <td>${account.name}</td>
+          <td>${account.guardian}</td>
+          <td>${account.teacher}</td>
+          <td>${account.balance}</td>
+          <td>${account.reason || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    /* ==========================================
+       MISSED SESSION FILTERS
+       ========================================== */
+    function toggleMsFilter(btn) {
+      const panel = btn.closest('.ms-card').querySelector('.ms-filter');
+      panel.classList.toggle('show');
+      btn.classList.toggle('active', panel.classList.contains('show'));
+    }
+
+    function closeMsFilter(el) {
+      const panel = el.closest('.ms-filter');
+      panel.classList.remove('show');
+      panel.closest('.ms-card').querySelector('.chip-filter').classList.remove('active');
+    }
+
+    function clearMsFilter() {
+      document.getElementById('msDept').value = '';
+      document.getElementById('msTeacher').value = '';
+      document.getElementById('msDate').value = '';
+      renderMissedSessions();
+    }
+
+    function applyMsFilter() {
+      const dept = document.getElementById('msDept').value;
+      const teach = document.getElementById('msTeacher').value;
+      const date = document.getElementById('msDate').value;
+
+      const filtered = seedData.missedSessions.filter(record => {
+        const okDept = !dept || record.department === dept;
+        const okTeach = !teach || record.teacher === teach;
+        const okDate = !date || record.date === date;
+        return okDept && okTeach && okDate;
+      });
+
+      renderMissedSessions(filtered);
+      document.querySelector('#missedCard .ms-filter').classList.remove('show');
+      document.querySelector('#missedCard .chip-filter').classList.remove('active');
+    }
+
+    function filterMissedByShow(value) {
+      let rows = seedData.missedSessions;
+      if (value === 'attended') rows = rows.filter(r => r.status === 'Attended');
+      if (value === 'missed') rows = rows.filter(r => r.status === 'Missed');
+      renderMissedSessions(rows);
+    }
+
+    /* ==========================================
+       ACCOUNT LIST FILTERS
+       ========================================== */
+    const accountFilterState = {
+      status: 'active',
+      source: 'all',
+      year: 'all'
+    };
+
+    function populateYearOptions() {
+      const select = document.getElementById('yearFilter');
+      if (!select) return;
+
+      select.innerHTML = '';
+      const optAll = document.createElement('option');
+      optAll.value = 'all';
+      optAll.textContent = 'All Years';
+      select.appendChild(optAll);
+
+      const currentYear = new Date().getFullYear();
+      for (let year = currentYear; year >= 2000; year--) {
+        const option = document.createElement('option');
+        option.value = String(year);
+        option.textContent = String(year);
+        select.appendChild(option);
+      }
+
+      select.value = 'all';
+      select.addEventListener('change', () => {
+        accountFilterState.year = select.value;
+        applyAccountFilters();
+      });
+    }
+
+    function applyAccountFilters() {
+      const wantedStatus = accountFilterState.status;
+      const wantedSource = accountFilterState.source;
+      const wantedYear = accountFilterState.year;
+
+      let rows = seedData.accountList.slice();
+      rows = rows.filter(r => (r.status || '').toLowerCase() === wantedStatus);
+
+      if (wantedSource !== 'all') {
+        rows = rows.filter(r => (r.source || '') === wantedSource);
+      }
+
+      if (wantedYear !== 'all') {
+        rows = rows.filter(r => String(getYearFromDueDate(r.dueDate)) === String(wantedYear));
+      }
+
+      renderAccountListFiltered(rows);
+    }
+
+    function setPaymentFilter(source, event) {
+      accountFilterState.source = source;
+      document.querySelectorAll('.account-source-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if (event && event.target) {
+        event.target.classList.add('active');
+      }
+      applyAccountFilters();
+    }
+
+    function switchAccountTab(tab, event) {
+      accountFilterState.status = tab;
+
+      document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if (event && event.target) {
+        event.target.classList.add('active');
+      }
+
+      accountFilterState.source = 'all';
+      document.querySelectorAll('.account-source-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.source === 'all') {
+          btn.classList.add('active');
+        }
+      });
+
+      applyAccountFilters();
+      updateReasonColumnVisibility();
+    }
+
+    function updateReasonColumnVisibility() {
+      const table = document.querySelector('.account-list-table');
+      if (!table) return;
+      const hide = (accountFilterState.status === 'active' || accountFilterState.status === 'new');
+      table.classList.toggle('table-hide-reason', hide);
+    }
+
+    /* ==========================================
+       ACCOUNT ACTIVITY SOURCE FILTER
+       ========================================== */
+    let aaPendingSelection = 'overall';
+
+    function toggleAAFilter() {
+      document.getElementById('aaPanel').classList.toggle('show');
+      document.getElementById('aaFilterBtn').classList.toggle('active');
+    }
+
+    function resetAAFilter() {
+      aaPendingSelection = 'overall';
+      setAAFilter('overall');
+    }
+
+    function setAAFilter(sourceKey) {
+      aaPendingSelection = sourceKey;
+      const radios = document.querySelectorAll('#aaPanel input[type="radio"]');
+      radios.forEach((radio, index) => {
+        if ((sourceKey === 'overall' && index === 0) ||
+            (sourceKey === 'DSWD' && index === 1) ||
+            (sourceKey === 'Independent' && index === 2)) {
+          radio.checked = true;
+        } else {
+          radio.checked = false;
+        }
+      });
+    }
+
+    function applyAAFilter() {
+      const source = aaPendingSelection;
+      const { active, new: nu, inactive, archive } = accountActivityBase[source];
+
+      document.getElementById('aaActive').value = active;
+      document.getElementById('aaNew').value = nu;
+      document.getElementById('aaInactive').value = inactive;
+      document.getElementById('aaArchive').value = archive;
+
+      toggleAAFilter();
+    }
+
+    /* ==========================================
+       CHARTS
+       ========================================== */
+    let donutInstance = null;
+    let barInstance = null;
+
+    function overallCounts() {
+      const { active, new: nu, inactive, archive } = accountActivityBase.overall;
+      return { active, inactive, nu, archive };
+    }
+
+    function initDonutChart() {
+      const ctx = document.getElementById('accountDonut').getContext('2d');
+      const { active, inactive, nu, archive } = overallCounts();
+
+      donutInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Inactive', 'New', 'Archive'],
+          datasets: [{
+            data: [active, inactive, nu, archive],
+            backgroundColor: ['#FFD93D', '#E8E8E8', '#4D96FF', '#5DD5C0'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 15,
+                font: { size: 11 }
+              }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+    }
+
+    /* Bar Chart Data */
+    const barDataByYear = {
+      2016: { new: 0, inactive: 0, archive: 0 },
+      2017: { new: 0, inactive: 0, archive: 0 },
+      2018: { new: 0, inactive: 0, archive: 0 },
+      2019: { new: 0, inactive: 0, archive: 0 },
+      2020: { new: 0, inactive: 0, archive: 0 },
+      2021: { new: 2, inactive: 1, archive: 1 },
+      2022: { new: 3, inactive: 2, archive: 1 },
+      2023: { new: 0, inactive: 1, archive: 4 },
+      2024: { new: 1, inactive: 3, archive: 1 },
+      2025: { new: 4, inactive: 1, archive: 2 }
+    };
+
+    const YEARS_PER_PAGE = 5;
+    const ALL_YEARS = Object.keys(barDataByYear).map(Number).sort((a, b) => a - b);
+    const MIN_YEAR = ALL_YEARS[0];
+    const MAX_YEAR = ALL_YEARS[ALL_YEARS.length - 1];
+
+    let barEndYear = MAX_YEAR;
+
+    function windowYears(endYear) {
+      const start = endYear - (YEARS_PER_PAGE - 1);
+      return Array.from({ length: YEARS_PER_PAGE }, (_, i) => start + i);
+    }
+
+    function seriesFor(years) {
+      const sNew = [], sInactive = [], sArchive = [];
+      years.forEach(year => {
+        const record = barDataByYear[year] || { new: 0, inactive: 0, archive: 0 };
+        sNew.push(record.new || 0);
+        sInactive.push(record.inactive || 0);
+        sArchive.push(record.archive || 0);
+      });
+      return { sNew, sInactive, sArchive };
+    }
+
+    function renderBarChart() {
+      const years = windowYears(barEndYear);
+      const { sNew, sInactive, sArchive } = seriesFor(years);
+
+      const ctx = document.getElementById('accountBar').getContext('2d');
+      if (barInstance) barInstance.destroy();
+
+      barInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: years.map(String),
+          datasets: [
+            {
+              label: 'New',
+              data: sNew,
+              backgroundColor: '#5DD5C0',
+              borderRadius: 6,
+              barThickness: 28
+            },
+            {
+              label: 'Inactive',
+              data: sInactive,
+              backgroundColor: '#2B4A7C',
+              borderRadius: 6,
+              barThickness: 28
+            },
+            {
+              label: 'Archive',
+              data: sArchive,
+              backgroundColor: '#808080',
+              borderRadius: 6,
+              barThickness: 28
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              align: 'start',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 12,
+                font: { size: 11 }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,.8)',
+              titleFont: { size: 12 },
+              bodyFont: { size: 11 },
+              padding: 10,
+              cornerRadius: 6
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 11 } }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0,0,0,.05)' },
+              ticks: { stepSize: 1, font: { size: 10 } }
+            }
+          }
+        }
+      });
+
+      // Update arrow button states
+      const prevBtn = document.querySelector('.chart-nav[aria-label="Previous year"]');
+      const nextBtn = document.querySelector('.chart-nav[aria-label="Next year"]');
+      const canPrev = (barEndYear - YEARS_PER_PAGE) - (YEARS_PER_PAGE - 1) >= MIN_YEAR;
+      const canNext = (barEndYear + YEARS_PER_PAGE) <= MAX_YEAR;
+      if (prevBtn) prevBtn.style.opacity = canPrev ? '1' : '0.4';
+      if (nextBtn) nextBtn.style.opacity = canNext ? '1' : '0.4';
+    }
+
+    function navigateBarYear(direction) {
+      if (direction === 'prev') {
+        const candidate = barEndYear - YEARS_PER_PAGE;
+        if ((candidate - (YEARS_PER_PAGE - 1)) >= MIN_YEAR) {
+          barEndYear = candidate;
+          renderBarChart();
+        }
+      } else if (direction === 'next') {
+        const candidate = barEndYear + YEARS_PER_PAGE;
+        if (candidate <= MAX_YEAR) {
+          barEndYear = candidate;
+          renderBarChart();
+        }
+      }
+    }
+
+    /* ==========================================
+       MONTH/YEAR SELECTORS
+       ========================================== */
+    function populateShowSelectorsFor(monthId, yearId, onChange) {
+      const monthSelect = document.getElementById(monthId);
+      const yearSelect = document.getElementById(yearId);
+      if (!monthSelect || !yearSelect) return;
+
+      const MONTHS = Array.from({ length: 12 }, (_, i) =>
+        new Date(2000, i, 1).toLocaleString('en-US', { month: 'long' })
+      );
+
+      monthSelect.innerHTML = '';
+      MONTHS.forEach((label, i) => {
+        const option = document.createElement('option');
+        option.value = String(i);
+        option.textContent = label;
+        monthSelect.appendChild(option);
+      });
+
+      const currentYear = new Date().getFullYear();
+      yearSelect.innerHTML = '';
+      for (let year = currentYear; year >= 2000; year--) {
+        const option = document.createElement('option');
+        option.value = String(year);
+        option.textContent = String(year);
+        yearSelect.appendChild(option);
+      }
+
+      monthSelect.value = String(new Date().getMonth());
+      yearSelect.value = String(currentYear);
+
+      const emit = () => onChange?.(parseInt(monthSelect.value, 10), parseInt(yearSelect.value, 10));
+      monthSelect.addEventListener('change', emit);
+      yearSelect.addEventListener('change', emit);
+      emit();
+    }
+
+    function onManageShowChange(monthIndex, year) {
+      console.log('Manage Account → month:', monthIndex, 'year:', year);
+    }
+
+    /* ==========================================
+       UI HELPERS
+       ========================================== */
+    function toggleDropdown(element) {
+      element.classList.toggle('open');
+      element.querySelector('.nav-dropdown').classList.toggle('open');
+    }
+
+    function showNotifications() {
+      alert('No new notifications');
+    }
+
+    /* ==========================================
+       INITIALIZATION
+       ========================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set today's date
+      document.getElementById('todayDate').textContent = getTodayFormatted();
+
+      // Render sections
+      renderRecentAccounts();
+      renderMissedSessions();
+      updateReasonColumnVisibility();
+
+      // Initialize selectors
+      populateShowSelectorsFor('showMonth', 'showYear', onManageShowChange);
+      populateYearOptions();
+
+      // Initialize tabs
+      const initialTabBtn = document.querySelector('.tabs .tab-btn');
+      if (initialTabBtn) initialTabBtn.classList.add('active');
+
+      // Apply filters
+      applyAccountFilters();
+
+      // Initialize charts
+      initDonutChart();
+      renderBarChart();
+
+      // Missed Session show radio buttons
+      const msShowBar = document.getElementById('msShowBar');
+      if (msShowBar) {
+        msShowBar.addEventListener('change', (event) => {
+          if (event.target && event.target.name === 'msShow') {
+            filterMissedByShow(event.target.value);
+          }
+        });
+      }
+
+      // Click-away for AA panel
+      document.addEventListener('click', event => {
+        const panel = document.getElementById('aaPanel');
+        const button = document.getElementById('aaFilterBtn');
+        if (panel && panel.classList.contains('show') &&
+            !panel.contains(event.target) && !button.contains(event.target)) {
+          toggleAAFilter();
+        }
+      });
+
+      // ESC key for AA panel
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          const panel = document.getElementById('aaPanel');
+          if (panel && panel.classList.contains('show')) {
+            toggleAAFilter();
+          }
+        }
+      });
+
+      // Click-away for Missed Session filter
+      document.addEventListener('click', event => {
+        const panel = document.querySelector('#missedCard .ms-filter');
+        const trigger = document.querySelector('#missedCard .chip-filter');
+        if (!panel) return;
+        if (panel.classList.contains('show') &&
+            !panel.contains(event.target) && !trigger.contains(event.target)) {
+          panel.classList.remove('show');
+          trigger.classList.remove('active');
+        }
+      });
+
+      // ESC key for Missed Session filter
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          const panel = document.querySelector('#missedCard .ms-filter');
+          if (panel && panel.classList.contains('show')) {
+            panel.classList.remove('show');
+            document.querySelector('#missedCard .chip-filter').classList.remove('active');
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
