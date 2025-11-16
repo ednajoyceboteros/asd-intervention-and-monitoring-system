@@ -12,32 +12,21 @@
        CSS VARIABLES
        ========================================== */
     :root {
-      /* Primary Colors */
       --primary-color: #5DD5C0;
       --primary-light: #E8F9F6;
-      
-      /* Accent Colors */
       --accent-orange: #FF9D5C;
       --accent-red: #FF6B6B;
       --accent-blue: #4D96FF;
       --accent-yellow: #FFD93D;
       --accent-purple: #9D5CFF;
-      
-      /* Status Colors */
       --status-queue: #E3F2FD;
       --status-queue-text: #1976D2;
       --status-update: #F5F5F5;
       --status-update-text: #6B7280;
-      
-      /* Background Colors */
       --bg-dashboard: #F9F9F9;
       --bg-container: #FFFFFF;
-      
-      /* Text Colors */
       --text-primary: #2C3E50;
       --text-secondary: #7F8C8D;
-      
-      /* UI Colors */
       --border-color: #E0E0E0;
       --sidebar-active: #F2F2F2;
       --online-green: #4CAF50;
@@ -326,53 +315,49 @@
       color: var(--text-primary);
     }
 
-/* YEAR FILTER – NEW DESIGN */
-.year-filter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--text-secondary);
-}
+    /* YEAR FILTER */
+    .year-filter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
 
-.year-filter svg {
-  width: 14px;
-  height: 14px;
-  color: var(--text-secondary);
-}
+    .year-filter svg {
+      width: 14px;
+      height: 14px;
+      color: var(--text-secondary);
+    }
 
-.year-label {
-  font-weight: 500;
-  color: var(--text-secondary);
-}
+    .year-label {
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
 
-/* DROPDOWN BUTTON-STYLE */
-.year-filter select {
-  padding: 6px 26px 6px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 11px;
-  color: var(--text-primary);
-  background: var(--bg-container);
-  cursor: pointer;
-  appearance: none;
+    .year-filter select {
+      padding: 6px 26px 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-primary);
+      background: var(--bg-container);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237F8C8D' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+      min-width: 90px;
+    }
 
-  /* custom arrow */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237F8C8D' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
-  min-width: 90px;
-}
-
-.year-filter select:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--primary-light);
-  border-color: var(--primary-color);
-}
-
+    .year-filter select:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--primary-light);
+      border-color: var(--primary-color);
+    }
 
     /* ==========================================
-       OVERVIEW LAYOUT (cards left, donut right)
+       OVERVIEW LAYOUT
        ========================================== */
     .overview-layout {
       display: flex;
@@ -390,14 +375,11 @@
       justify-content: center;
     }
 
-    /* ==========================================
-       PAYMENT CARDS
-       ========================================== */
+    /* PAYMENT CARDS */
     .payment-cards-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 16px;
-      margin-bottom: 0;
     }
 
     .payment-card {
@@ -450,9 +432,7 @@
       color: var(--text-primary);
     }
 
-    /* ==========================================
-       DONUT CHART
-       ========================================== */
+    /* DONUT CHART */
     .donut-container {
       display: flex;
       align-items: center;
@@ -496,9 +476,7 @@
       color: var(--text-primary);
     }
 
-    /* ==========================================
-       BAR CHART (inside same card)
-       ========================================== */
+    /* BAR CHART (transparent container) */
     .bar-row {
       margin-top: 24px;
       padding-top: 20px;
@@ -509,8 +487,8 @@
       margin-top: 8px;
       padding: 16px 18px;
       border-radius: 12px;
-      background: transparent;      /* transparent container */
-      border: 1px solid #E5E7EB;    /* remove if you don't want outline */
+      background: transparent;
+      border: 1px solid #E5E7EB;
     }
 
     .chart-container {
@@ -540,9 +518,7 @@
       border-radius: 3px;
     }
 
-    /* ==========================================
-       RESPONSIVE
-       ========================================== */
+    /* RESPONSIVE */
     @media (max-width: 900px) {
       .overview-layout {
         flex-direction: column;
@@ -579,9 +555,7 @@
 
 <body>
   <div class="dashboard-container">
-    <!-- ==========================================
-         SIDEBAR
-         ========================================== -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="profile-section">
         <div class="profile-avatar">J</div>
@@ -609,9 +583,7 @@
       </nav>
     </aside>
 
-    <!-- ==========================================
-         MAIN CONTENT
-         ========================================== -->
+    <!-- MAIN CONTENT -->
     <main class="main-content">
       <!-- Header -->
       <header class="header">
@@ -644,22 +616,19 @@
         <h1 class="page-title">Payment Type Summary</h1>
       </div>
 
-      <!-- ==========================================
-           OVERVIEW + DONUT + BAR (all in one section)
-           ========================================== -->
+      <!-- OVERVIEW + DONUT + BAR -->
       <section class="chart-section">
         <!-- Header with filter -->
-      <div class="chart-section-header">
-        <div class="chart-title">Overview by Payment Type</div>
-        <div class="year-filter">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-          </svg>
-          <span class="year-label">Year</span>
-          <select id="yearSelect"></select>
+        <div class="chart-section-header">
+          <div class="chart-title">Overview by Payment Type</div>
+          <div class="year-filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span class="year-label">Year</span>
+            <select id="yearSelect"></select>
+          </div>
         </div>
-      </div>
-
 
         <!-- FIRST ROW: cards + donut -->
         <div class="overview-layout">
@@ -693,11 +662,11 @@
               </div>
 
               <div class="payment-card">
-                <div class="payment-icon">🏛️</div>
+                <div class="payment-icon">🧾</div>
                 <div class="payment-details">
                   <div class="payment-label">Unpaid</div>
                 </div>
-                <div class="payment-value-box" id="dswdUnpaid">0</div>
+                <div class="payment-value-box" id="unpaid">0</div>
               </div>
             </div>
           </div>
@@ -725,8 +694,8 @@
                   <span class="donut-legend-value" id="legendDigital">0%</span>
                 </div>
                 <div class="donut-legend-item">
-                  <div class="donut-legend-color" style="background: #FDE047;"></div>
-                  <span class="donut-legend-label">DSWD Unpaid</span>
+                  <div class="donut-legend-color" style="background: #F59E0B;"></div>
+                  <span class="donut-legend-label">Unpaid</span>
                   <span class="donut-legend-value" id="legendUnpaid">0%</span>
                 </div>
               </div>
@@ -734,7 +703,7 @@
           </div>
         </div>
 
-        <!-- SECOND ROW: bar chart (transparent container) -->
+        <!-- SECOND ROW: bar chart -->
         <div class="bar-row">
           <div class="chart-section-header">
             <div class="chart-title">Payment Type by Month</div>
@@ -755,10 +724,6 @@
                 <span>DSWD Paid</span>
               </div>
               <div class="legend-item">
-                <div class="legend-color" style="background: #FDE047;"></div>
-                <span>DSWD Unpaid</span>
-              </div>
-              <div class="legend-item">
                 <div class="legend-color" style="background: #F59E0B;"></div>
                 <span>Unpaid</span>
               </div>
@@ -775,47 +740,47 @@
 
   <script>
     /* ==========================================
-       DATA
+       DATA (Cash, Digital, DSWD Paid, Unpaid)
        ========================================== */
     const paymentData = {
       2025: {
         cash: 29,
         digital: 17,
         dswdPaid: 7,
-        dswdUnpaid: 15,
+        unpaid: 18,
         monthly: {
-          January:   { cash: 4, dswdPaid: 0, dswdUnpaid: 2, unpaid: 3, digital: 2 },
-          February:  { cash: 3, dswdPaid: 0, dswdUnpaid: 2, unpaid: 3, digital: 3 },
-          March:     { cash: 2, dswdPaid: 1, dswdUnpaid: 1, unpaid: 3, digital: 2 },
-          April:     { cash: 3, dswdPaid: 1, dswdUnpaid: 2, unpaid: 1, digital: 2 },
-          May:       { cash: 5, dswdPaid: 1, dswdUnpaid: 2, unpaid: 3, digital: 5 },
-          June:      { cash: 2, dswdPaid: 1, dswdUnpaid: 1, unpaid: 0, digital: 3 },
-          July:      { cash: 0, dswdPaid: 0, dswdUnpaid: 0, unpaid: 4, digital: 0 },
-          August:    { cash: 0, dswdPaid: 0, dswdUnpaid: 0, unpaid: 1, digital: 0 },
-          September: { cash: 0, dswdPaid: 0, dswdUnpaid: 0, unpaid: 0, digital: 0 },
-          October:   { cash: 0, dswdPaid: 0, dswdUnpaid: 0, unpaid: 0, digital: 0 },
-          November:  { cash: 0, dswdPaid: 0, dswdUnpaid: 0, unpaid: 0, digital: 0 },
-          December:  { cash: 0, dswdPaid: 0, dswdUnpaid: 0, unpaid: 0, digital: 0 }
+          January:   { cash: 4, dswdPaid: 0, unpaid: 3, digital: 2 },
+          February:  { cash: 3, dswdPaid: 0, unpaid: 3, digital: 3 },
+          March:     { cash: 2, dswdPaid: 1, unpaid: 3, digital: 2 },
+          April:     { cash: 3, dswdPaid: 1, unpaid: 1, digital: 2 },
+          May:       { cash: 5, dswdPaid: 1, unpaid: 3, digital: 5 },
+          June:      { cash: 2, dswdPaid: 1, unpaid: 0, digital: 3 },
+          July:      { cash: 0, dswdPaid: 0, unpaid: 4, digital: 0 },
+          August:    { cash: 0, dswdPaid: 0, unpaid: 1, digital: 0 },
+          September: { cash: 0, dswdPaid: 0, unpaid: 0, digital: 0 },
+          October:   { cash: 0, dswdPaid: 0, unpaid: 0, digital: 0 },
+          November:  { cash: 0, dswdPaid: 0, unpaid: 0, digital: 0 },
+          December:  { cash: 0, dswdPaid: 0, unpaid: 0, digital: 0 }
         }
       },
       2024: {
         cash: 25,
         digital: 15,
         dswdPaid: 5,
-        dswdUnpaid: 12,
+        unpaid: 13,
         monthly: {
-          January:   { cash: 3, dswdPaid: 0, dswdUnpaid: 1, unpaid: 2, digital: 2 },
-          February:  { cash: 2, dswdPaid: 1, dswdUnpaid: 1, unpaid: 1, digital: 1 },
-          March:     { cash: 3, dswdPaid: 0, dswdUnpaid: 1, unpaid: 2, digital: 2 },
-          April:     { cash: 2, dswdPaid: 1, dswdUnpaid: 1, unpaid: 1, digital: 1 },
-          May:       { cash: 3, dswdPaid: 0, dswdUnpaid: 2, unpaid: 2, digital: 2 },
-          June:      { cash: 2, dswdPaid: 1, dswdUnpaid: 1, unpaid: 1, digital: 2 },
-          July:      { cash: 3, dswdPaid: 0, dswdUnpaid: 1, unpaid: 1, digital: 1 },
-          August:    { cash: 2, dswdPaid: 1, dswdUnpaid: 1, unpaid: 2, digital: 1 },
-          September: { cash: 2, dswdPaid: 0, dswdUnpaid: 1, unpaid: 1, digital: 1 },
-          October:   { cash: 1, dswdPaid: 1, dswdUnpaid: 1, unpaid: 0, digital: 1 },
-          November:  { cash: 1, dswdPaid: 0, dswdUnpaid: 1, unpaid: 0, digital: 1 },
-          December:  { cash: 1, dswdPaid: 0, dswdUnpaid: 0, unpaid: 0, digital: 0 }
+          January:   { cash: 3, dswdPaid: 0, unpaid: 2, digital: 2 },
+          February:  { cash: 2, dswdPaid: 1, unpaid: 1, digital: 1 },
+          March:     { cash: 3, dswdPaid: 0, unpaid: 2, digital: 2 },
+          April:     { cash: 2, dswdPaid: 1, unpaid: 1, digital: 1 },
+          May:       { cash: 3, dswdPaid: 0, unpaid: 2, digital: 2 },
+          June:      { cash: 2, dswdPaid: 1, unpaid: 1, digital: 2 },
+          July:      { cash: 3, dswdPaid: 0, unpaid: 1, digital: 1 },
+          August:    { cash: 2, dswdPaid: 1, unpaid: 2, digital: 1 },
+          September: { cash: 2, dswdPaid: 0, unpaid: 1, digital: 1 },
+          October:   { cash: 1, dswdPaid: 1, unpaid: 0, digital: 1 },
+          November:  { cash: 1, dswdPaid: 0, unpaid: 0, digital: 1 },
+          December:  { cash: 1, dswdPaid: 0, unpaid: 0, digital: 0 }
         }
       }
     };
@@ -831,13 +796,13 @@
     function buildEmptyYearData() {
       const monthly = {};
       MONTH_NAMES.forEach(m => {
-        monthly[m] = { cash: 0, dswdPaid: 0, dswdUnpaid: 0, unpaid: 0, digital: 0 };
+        monthly[m] = { cash: 0, dswdPaid: 0, unpaid: 0, digital: 0 };
       });
       return {
         cash: 0,
         digital: 0,
         dswdPaid: 0,
-        dswdUnpaid: 0,
+        unpaid: 0,
         monthly
       };
     }
@@ -861,22 +826,22 @@
       document.getElementById('cashValue').textContent = data.cash;
       document.getElementById('digitalValue').textContent = data.digital;
       document.getElementById('dswdPaid').textContent = data.dswdPaid;
-      document.getElementById('dswdUnpaid').textContent = data.dswdUnpaid;
+      document.getElementById('unpaid').textContent = data.unpaid;
 
-      // Calculate percentages for donut chart
-      const total = data.cash + data.digital + data.dswdPaid + data.dswdUnpaid;
-      let cashPercent = 0, digitalPercent = 0, dswdPaidPercent = 0, dswdUnpaidPercent = 0;
+      // Percentages
+      const total = data.cash + data.digital + data.dswdPaid + data.unpaid;
+      let cashPercent = 0, digitalPercent = 0, dswdPaidPercent = 0, unpaidPercent = 0;
       if (total > 0) {
-        cashPercent       = ((data.cash      / total) * 100).toFixed(1);
-        digitalPercent    = ((data.digital   / total) * 100).toFixed(1);
-        dswdPaidPercent   = ((data.dswdPaid  / total) * 100).toFixed(1);
-        dswdUnpaidPercent = ((data.dswdUnpaid/ total) * 100).toFixed(1);
+        cashPercent    = ((data.cash     / total) * 100).toFixed(1);
+        digitalPercent = ((data.digital  / total) * 100).toFixed(1);
+        dswdPaidPercent= ((data.dswdPaid / total) * 100).toFixed(1);
+        unpaidPercent  = ((data.unpaid   / total) * 100).toFixed(1);
       }
 
       document.getElementById('legendCash').textContent       = cashPercent + '%';
       document.getElementById('legendDigital').textContent    = digitalPercent + '%';
       document.getElementById('legendDSWDPaid').textContent   = dswdPaidPercent + '%';
-      document.getElementById('legendUnpaid').textContent     = dswdUnpaidPercent + '%';
+      document.getElementById('legendUnpaid').textContent     = unpaidPercent + '%';
 
       updateDonutChart(data);
       updateBarChart(data.monthly);
@@ -884,16 +849,15 @@
 
     function updateDonutChart(data) {
       const ctx = document.getElementById('paymentDonutChart').getContext('2d');
-      
       if (donutChart) donutChart.destroy();
 
       donutChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['Cash', 'DSWD Paid', 'Digital', 'DSWD Unpaid'],
+          labels: ['Cash', 'DSWD Paid', 'Digital', 'Unpaid'],
           datasets: [{
-            data: [data.cash, data.dswdPaid, data.digital, data.dswdUnpaid],
-            backgroundColor: ['#48BB78', '#2563EB', '#C084FC', '#FDE047'],
+            data: [data.cash, data.dswdPaid, data.digital, data.unpaid],
+            backgroundColor: ['#48BB78', '#2563EB', '#C084FC', '#F59E0B'],
             borderWidth: 0
           }]
         },
@@ -926,26 +890,23 @@
 
     function updateBarChart(monthlyData) {
       const ctx = document.getElementById('paymentBarChart').getContext('2d');
-      
       if (barChart) barChart.destroy();
 
-      const months = MONTH_NAMES;
-      const cashData       = months.map(m => monthlyData[m].cash);
-      const dswdPaidData   = months.map(m => monthlyData[m].dswdPaid);
-      const dswdUnpaidData = months.map(m => monthlyData[m].dswdUnpaid);
-      const unpaidData     = months.map(m => monthlyData[m].unpaid);
-      const digitalData    = months.map(m => monthlyData[m].digital);
+      const months        = MONTH_NAMES;
+      const cashData      = months.map(m => monthlyData[m].cash);
+      const dswdPaidData  = months.map(m => monthlyData[m].dswdPaid);
+      const unpaidData    = months.map(m => monthlyData[m].unpaid);
+      const digitalData   = months.map(m => monthlyData[m].digital);
 
       barChart = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: months,
           datasets: [
-            { label: 'Cash',           data: cashData,       backgroundColor: '#48BB78', borderRadius: 4, barThickness: 12 },
-            { label: 'DSWD Paid',      data: dswdPaidData,   backgroundColor: '#2563EB', borderRadius: 4, barThickness: 12 },
-            { label: 'DSWD Unpaid',    data: dswdUnpaidData, backgroundColor: '#FDE047', borderRadius: 4, barThickness: 12 },
-            { label: 'Unpaid',         data: unpaidData,     backgroundColor: '#F59E0B', borderRadius: 4, barThickness: 12 },
-            { label: 'Digital Payment',data: digitalData,    backgroundColor: '#C084FC', borderRadius: 4, barThickness: 12 }
+            { label: 'Cash',            data: cashData,     backgroundColor: '#48BB78', borderRadius: 4, barThickness: 12 },
+            { label: 'DSWD Paid',       data: dswdPaidData, backgroundColor: '#2563EB', borderRadius: 4, barThickness: 12 },
+            { label: 'Unpaid',          data: unpaidData,   backgroundColor: '#F59E0B', borderRadius: 4, barThickness: 12 },
+            { label: 'Digital Payment', data: digitalData,  backgroundColor: '#C084FC', borderRadius: 4, barThickness: 12 }
           ]
         },
         options: {
@@ -977,7 +938,7 @@
     }
 
     /* ==========================================
-       EVENT HANDLERS
+       EVENTS
        ========================================== */
     function toggleDropdown(element) {
       element.classList.toggle('open');
@@ -989,13 +950,11 @@
       alert('No new notifications');
     }
 
-    /* ==========================================
-       DOCUMENT READY
-       ========================================== */
     document.addEventListener('DOMContentLoaded', () => {
       const yearSelect = document.getElementById('yearSelect');
       const currentYear = new Date().getFullYear();
 
+      // Fill year dropdown 2000–current
       for (let y = 2000; y <= currentYear; y++) {
         const opt = document.createElement('option');
         opt.value = y;
