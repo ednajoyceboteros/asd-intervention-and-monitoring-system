@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Status Summary - iChildren</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    /* ============================================
+       CSS VARIABLES - CENTRALIZED COLOR PALETTE
+       ============================================ */
+    :root {
+      --primary-color: #5DD5C0;
+      --primary-light: #E8F9F6;
+      --accent-orange: #FF9D5C;
+      --accent-red: #FF6B6B;
+      --accent-blue: #4D96FF;
+      --accent-yellow: #FFD93D;
+      --accent-purple: #9D5CFF;
+      --accent-green: #4CAF50;
+      --status-queue: #E3F2FD;
+      --status-queue-text: #1976D2;
+      --status-update: #F5F5F5;
+      --status-update-text: #6B7280;
+      --bg-dashboard: #F9F9F9;
+      --bg-container: #FFFFFF;
+      --text-primary: #2C3E50;
+      --text-secondary: #7F8C8D;
+      --border-color: #E0E0E0;
+      --sidebar-active: #F2F2F2;
+      --online-green: #4CAF50;
+      --card-bg: #FFFFFF;        /* main card bg */
+      --card-subtle: #FCFEFF;    /* optional slightly tinted white */
+    }
+
+    /* ============================================
+       GLOBAL STYLES & TYPOGRAPHY
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      color: var(--text-primary);
+      background-color: var(--bg-dashboard);
+    }
+
+    /* ============================================
+       LAYOUT (SIDEBAR + MAIN)
+       ============================================ */
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-content {
+      margin-left: 180px;
+      padding: 20px 30px 40px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ============================================
+       SIDEBAR (from reusable snippet)
+       ============================================ */
+    .sidebar {
+      width: 180px;
+      background: var(--bg-container);
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .profile-section {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .profile-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .nav-item {
+      display: block;
+      text-decoration: none;
+      color: var(--text-secondary);
+      padding: 10px 15px;
+      margin-bottom: 5px;
+      font-size: 12px;
+      border-radius: 6px;
+      transition: 0.2s;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: var(--sidebar-active);
+      color: var(--text-primary);
+    }
+
+    /* Dropdown in sidebar */
+    .nav-item.has-dropdown::after {
+      content: '▼';
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 8px;
+      transition: 0.2s;
+    }
+
+    .nav-item.has-dropdown.open::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .nav-dropdown {
+      display: none;
+      margin-top: 5px;
+    }
+
+    .nav-dropdown.open {
+      display: block;
+    }
+
+    .nav-dropdown-item {
+      display: block;
+      text-decoration: none;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      border-radius: 4px;
+      margin-bottom: 3px;
+      transition: 0.2s;
+      text-align: center;
+    }
+
+    .nav-dropdown-item:hover,
+    .nav-dropdown-item.active {
+      background: var(--bg-dashboard);
+      color: var(--text-primary);
+    }
+
+    /* ============================================
+       HEADER (from reusable snippet)
+       ============================================ */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Searchbar */
+    .searchbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 40px;
+      width: 320px;
+      padding: 0 10px 0 12px;
+      background: var(--bg-container);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+      transition: 0.15s;
+    }
+
+    .searchbar:focus-within {
+      border-color: #d0d7de;
+      box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    .searchbar input {
+      flex: 1;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font-size: 12px;
+    }
+
+    .searchbar .icon-left,
+    .searchbar .icon-right {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .searchbar .icon-left:hover,
+    .searchbar .icon-right:hover {
+      background: var(--bg-dashboard);
+      color: var(--text-primary);
+    }
+
+    /* Header right side: status + bell + logo */
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .online-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--online-green);
+      border-radius: 50%;
+    }
+
+    .notification-bell {
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    .notification-bell:hover {
+      transform: scale(1.1);
+    }
+
+    /* iC Logo */
+    .logo-container {
+      width: 35px;
+      height: 35px;
+      background: linear-gradient(135deg, #5DD5C0 0%, #4AC4B0 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Responsive: hide sidebar on small screens */
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+
+    /* ============================================
+       PAGE TITLE
+       ============================================ */
+    .title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ============================================
+       MAIN SUMMARY CONTAINER (ALL 4 INSIDE)
+       ============================================ */
+    .summary-card {
+      background: var(--bg-container);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .year-filter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .year-filter svg {
+      width: 14px;
+      height: 14px;
+      color: var(--text-secondary);
+    }
+
+    .year-filter select {
+      padding: 6px 26px 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-primary);
+      background: var(--bg-container);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237F8C8D' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+      min-width: 90px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr;
+      grid-auto-rows: minmax(0, auto);
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    /* ============================================
+       STATUS CARDS
+       ============================================ */
+    .status-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .status-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .status-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    .status-label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status-label.paid {
+      color: var(--accent-green);
+    }
+
+    .status-label.partial {
+      color: var(--accent-orange);
+    }
+
+    .status-label.unpaid {
+      color: var(--accent-red);
+    }
+
+    .status-label.refund {
+      color: #9E9E00;
+    }
+
+    .status-count {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      padding: 4px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    /* ============================================
+       CHARTS
+       ============================================ */
+    .chart-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border-color);
+    }
+
+    .donut-chart-wrapper {
+      height: 230px;
+      position: relative;
+    }
+
+    .bar-chart-wrapper {
+      height: 260px;
+      position: relative;
+    }
+
+    .chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    /* Donut legend (color indicators) */
+    .donut-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      margin-top: 8px;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .legend-paid {
+      background-color: #4CAF50;
+    }
+
+    .legend-unpaid {
+      background-color: #FF6B6B;
+    }
+
+    .legend-partial {
+      background-color: #FFD93D;
+    }
+
+    .legend-refund {
+      background-color: #9E9E00;
+    }
+
+    /* ============================================
+       HIGHEST UNPAID TABLE
+       ============================================ */
+    .table-section {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border-color);
+    }
+
+    .table-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    /* scroll starts under header/title */
+    .table-scroll {
+      max-height: 210px;
+      overflow-y: auto;
+    }
+
+    .unpaid-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .unpaid-table thead {
+      background: #EDEDED;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .unpaid-table th {
+      padding: 8px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .unpaid-table td {
+      padding: 8px 8px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+      background: var(--card-bg);
+    }
+
+    .unpaid-table tbody tr:hover td {
+      background: var(--primary-light);
+    }
+
+    /* ============================================
+       NOTIFICATIONS MODAL
+       ============================================ */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-container);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 24px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: var(--sidebar-active);
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      max-height: calc(80vh - 80px);
+    }
+
+    /* Simple responsive tweak */
+    @media (max-width: 900px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- ============================================
+         SIDEBAR (reusable, with Payment Status Summary active)
+         ============================================ -->
+    <aside class="sidebar">
+      <div class="profile-section">
+        <div class="profile-avatar">J</div>
+        <div class="profile-name">Jenny</div>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="staff_maindashboard.html" class="nav-item">Home</a>
+        <a href="staff_childprofile.html" class="nav-item">Child Profile</a>
+        <a href="staff_calendar.html" class="nav-item">Calendar</a>
+        <a href="staff_payment.html" class="nav-item">Payment</a>
+
+        <div class="nav-item has-dropdown open" onclick="toggleDropdown(this)">
+          Report
+          <div class="nav-dropdown open">
+            <a href="staff_appointment-summary.html" class="nav-dropdown-item">Appointment Summary</a>
+            <a href="staff_payment-status-summary.html" class="nav-dropdown-item active">Payment Status Summary</a>
+            <a href="staff_payment-type-summary.html" class="nav-dropdown-item">Payment Type Summary</a>
+            <a href="staff_management-table.html" class="nav-dropdown-item">Management Table</a>
+          </div>
+        </div>
+
+        <a href="logout" class="nav-item" style="margin-top:50px;">Log Out</a>
+        <a href="staff_settings.html" class="nav-item">Settings</a>
+      </nav>
+    </aside>
+
+    <!-- ============================================
+         MAIN CONTENT
+         ============================================ -->
+    <main class="main-content">
+      <!-- HEADER (reusable) -->
+      <header class="header">
+        <form class="searchbar" onsubmit="return false;">
+          <button type="button" class="icon-left" aria-label="Search">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M11 4a7 7 0 1 1-4.95 11.95l-2.6 2.6a1 1 0 0 1-1.4-1.42l2.6-2.6A7 7 0 0 1 11 4Zm0 2a5 5 0 1 0 0 10A5 5 0 0 0 11 6Z" fill="currentColor"/>
+            </svg>
+          </button>
+          <input id="searchInput" placeholder="Search..." autocomplete="off"/>
+          <button type="button" class="icon-right" aria-label="Open filters">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M4 7h8a2 2 0 1 0 0-2H4a2 2 0 0 0 0 2Zm0 12h8a2 2 0 1 0 0-2H4a2 2 0 0 0 0 2Zm16-7h-8a2 2 0 1 0 0 2h8a2 2 0 1 0 0-2Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="header-right">
+          <div class="online-status">
+            <span class="status-dot"></span>
+            <span>Online Status</span>
+          </div>
+          <div class="notification-bell" onclick="showNotifications()">🔔</div>
+          <div class="logo-container" title="iChildren">iC</div>
+        </div>
+      </header>
+
+      <!-- TITLE BAR -->
+      <div class="title-bar">
+        <h1 class="page-title">Payment Status Summary</h1>
+      </div>
+
+      <!-- ONE BIG CONTAINER WITH YEAR FILTER + 4 SECTIONS -->
+      <div class="summary-card">
+        <!-- Year filter INSIDE container -->
+        <div class="summary-header">
+          <div class="year-filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span style="font-weight: 500;">Year</span>
+            <select id="yearSelect"></select>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <!-- TOP LEFT: STATUS CARDS -->
+          <div>
+            <div class="status-cards">
+              <div class="status-card">
+                <div class="status-label paid">Paid</div>
+                <div class="status-count" id="paidCount">0</div>
+              </div>
+
+              <div class="status-card">
+                <div class="status-label partial">Partial</div>
+                <div class="status-count" id="partialCount">0</div>
+              </div>
+
+              <div class="status-card">
+                <div class="status-label unpaid">Unpaid</div>
+                <div class="status-count" id="unpaidCount">0</div>
+              </div>
+
+              <div class="status-card">
+                <div class="status-label refund">Refund</div>
+                <div class="status-count" id="refundCount">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOP RIGHT: DONUT CHART + LEGEND -->
+          <div>
+            <div class="chart-card">
+              <div class="donut-chart-wrapper">
+                <canvas id="donutChart"></canvas>
+              </div>
+              <!-- Color indicators -->
+              <div class="donut-legend">
+                <div class="legend-item">
+                  <span class="legend-dot legend-paid"></span>
+                  <span>Paid</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot legend-unpaid"></span>
+                  <span>Unpaid</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot legend-partial"></span>
+                  <span>Partial</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot legend-refund"></span>
+                  <span>Refund</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTTOM LEFT: BAR CHART -->
+          <div>
+            <div class="chart-card">
+              <h3 class="chart-title">Payment Status By Month</h3>
+              <div class="bar-chart-wrapper">
+                <canvas id="barChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTTOM RIGHT: HIGHEST UNPAID TABLE (SCROLLABLE BODY) -->
+          <div>
+            <div class="table-section">
+              <h3 class="table-title">Highest Unpaid and Partial Amount</h3>
+              <div class="table-scroll">
+                <table class="unpaid-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Grant</th>
+                      <th>Department</th>
+                      <th>Pending Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody id="unpaidTbody">
+                    <!-- Filled dynamically based on year -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- NOTIFICATIONS MODAL -->
+  <div id="notifModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <div class="modal-title">Notifications</div>
+        <button class="modal-close" aria-label="Close" onclick="closeNotificationModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="text-align:center;padding:20px;color:var(--text-secondary);">No new notifications</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // SIDEBAR DROPDOWN (for Report)
+    // ============================================
+    function toggleDropdown(element) {
+      element.classList.toggle('open');
+      const dropdown = element.querySelector('.nav-dropdown');
+      if (dropdown) dropdown.classList.toggle('open');
+    }
+
+    // ============================================
+    // MOCK DATA PER YEAR (for filtering)
+    // ============================================
+    const paymentData = {
+      "2025": {
+        statusCounts: { paid: 32, partial: 21, unpaid: 15, refund: 2 },
+        bar: {
+          paid:   [4, 3, 2, 2, 3, 5, 4, 3, 2, 4, 3, 2],
+          refund: [0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+          partial:[1, 2, 1, 0, 2, 3, 2, 1, 1, 2, 1, 0],
+          unpaid: [1, 0, 1, 1, 0, 2, 1, 0, 1, 2, 1, 1]
+        },
+        tableRows: [
+          { name: "Mark Hervana",    grant: "-",    dept: "OT", balance: "₱ 6,600.00" },
+          { name: "Sofia Andres",    grant: "DSWD", dept: "OT", balance: "₱ 5,400.00" },
+          { name: "Emma Ateia",      grant: "-",    dept: "OT", balance: "₱ 3,800.00" },
+          { name: "Maria Clara",     grant: "-",    dept: "OT", balance: "₱ 1,200.00" },
+          { name: "Clarence Moses",  grant: "-",    dept: "OT", balance: "₱ 1,200.00" },
+          { name: "John Bernardo",   grant: "-",    dept: "OT", balance: "₱ 1,200.00" },
+          { name: "Mike Enriquez",   grant: "-",    dept: "OT", balance: "₱ 1,200.00" }
+        ]
+      },
+      "2024": {
+        statusCounts: { paid: 28, partial: 18, unpaid: 12, refund: 1 },
+        bar: {
+          paid:   [3, 3, 2, 3, 2, 4, 3, 3, 3, 3, 2, 1],
+          refund: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+          partial:[1, 1, 1, 2, 1, 2, 2, 1, 1, 2, 2, 1],
+          unpaid: [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1]
+        },
+        tableRows: [
+          { name: "Sofia Andres",    grant: "DSWD", dept: "OT", balance: "₱ 5,000.00" },
+          { name: "Maria Clara",     grant: "-",    dept: "OT", balance: "₱ 3,200.00" },
+          { name: "Clarence Moses",  grant: "-",    dept: "OT", balance: "₱ 2,800.00" },
+          { name: "Emma Ateia",      grant: "-",    dept: "OT", balance: "₱ 2,400.00" }
+        ]
+      },
+      "2023": {
+        statusCounts: { paid: 24, partial: 15, unpaid: 10, refund: 1 },
+        bar: {
+          paid:   [2, 2, 3, 2, 2, 3, 2, 3, 2, 2, 1, 2],
+          refund: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          partial:[1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 2],
+          unpaid: [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 2, 1]
+        },
+        tableRows: [
+          { name: "Mark Hervana",    grant: "-",    dept: "OT", balance: "₱ 4,500.00" },
+          { name: "John Bernardo",   grant: "-",    dept: "OT", balance: "₱ 3,000.00" },
+          { name: "Mike Enriquez",   grant: "-",    dept: "OT", balance: "₱ 2,500.00" }
+        ]
+      },
+      "2022": {
+        statusCounts: { paid: 18, partial: 10, unpaid: 8, refund: 0 },
+        bar: {
+          paid:   [2, 1, 2, 1, 2, 2, 1, 2, 2, 1, 1, 1],
+          refund: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          partial:[1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+          unpaid: [0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1]
+        },
+        tableRows: [
+          { name: "Maria Clara",     grant: "-",    dept: "OT", balance: "₱ 3,000.00" },
+          { name: "Sofia Andres",    grant: "DSWD", dept: "OT", balance: "₱ 2,200.00" }
+        ]
+      }
+    };
+
+    const monthLabels = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    let donutChart = null;
+    let barChart = null;
+
+    // Empty data for years without defined data
+    function getYearData(year) {
+      if (paymentData[year]) return paymentData[year];
+      return {
+        statusCounts: { paid: 0, partial: 0, unpaid: 0, refund: 0 },
+        bar: {
+          paid:   new Array(12).fill(0),
+          refund: new Array(12).fill(0),
+          partial:new Array(12).fill(0),
+          unpaid: new Array(12).fill(0)
+        },
+        tableRows: []
+      };
+    }
+
+    // ============================================
+    // UPDATE FUNCTIONS
+    // ============================================
+    function updateStatusCards(yearData) {
+      document.getElementById('paidCount').textContent    = yearData.statusCounts.paid;
+      document.getElementById('partialCount').textContent = yearData.statusCounts.partial;
+      document.getElementById('unpaidCount').textContent  = yearData.statusCounts.unpaid;
+      document.getElementById('refundCount').textContent  = yearData.statusCounts.refund;
+    }
+
+    function updateTable(yearData) {
+      const tbody = document.getElementById('unpaidTbody');
+      tbody.innerHTML = '';
+      yearData.tableRows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.name}</td>
+          <td>${row.grant}</td>
+          <td>${row.dept}</td>
+          <td>${row.balance}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function initDonutChart(yearData) {
+      const ctx = document.getElementById('donutChart').getContext('2d');
+      const d = yearData.statusCounts;
+      donutChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Paid', 'Unpaid', 'Partial', 'Refund'],
+          datasets: [{
+            data: [d.paid, d.unpaid, d.partial, d.refund],
+            backgroundColor: ['#4CAF50', '#FF6B6B', '#FFD93D', '#9E9E00'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              titleFont: { size: 12 },
+              bodyFont: { size: 11 },
+              padding: 10,
+              cornerRadius: 6,
+              callbacks: {
+                label: function(context) {
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                  return context.label + ': ' + percentage + '%';
+                }
+              }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+    }
+
+    function initBarChart(yearData) {
+      const ctx = document.getElementById('barChart').getContext('2d');
+      barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: monthLabels,
+          datasets: [
+            {
+              label: 'Paid',
+              data: yearData.bar.paid,
+              backgroundColor: '#4CAF50',
+              borderRadius: 4,
+              barThickness: 12,
+              categoryPercentage: 0.7,
+              barPercentage: 0.8
+            },
+            {
+              label: 'Refund',
+              data: yearData.bar.refund,
+              backgroundColor: '#424242',
+              borderRadius: 4,
+              barThickness: 12,
+              categoryPercentage: 0.7,
+              barPercentage: 0.8
+            },
+            {
+              label: 'Partial',
+              data: yearData.bar.partial,
+              backgroundColor: '#FFD93D',
+              borderRadius: 4,
+              barThickness: 12,
+              categoryPercentage: 0.7,
+              barPercentage: 0.8
+            },
+            {
+              label: 'Unpaid',
+              data: yearData.bar.unpaid,
+              backgroundColor: '#FF6B6B',
+              borderRadius: 4,
+              barThickness: 12,
+              categoryPercentage: 0.7,
+              barPercentage: 0.8
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              align: 'end',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 15,
+                font: { size: 10 }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              titleFont: { size: 11 },
+              bodyFont: { size: 10 },
+              padding: 8,
+              cornerRadius: 6
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { 
+                font: { size: 9 },
+                maxRotation: 45,
+                minRotation: 45
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#EFEFEF' },
+              ticks: { 
+                stepSize: 2,
+                font: { size: 9 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateCharts(yearData) {
+      if (donutChart) {
+        const d = yearData.statusCounts;
+        donutChart.data.datasets[0].data = [d.paid, d.unpaid, d.partial, d.refund];
+        donutChart.update();
+      }
+
+      if (barChart) {
+        barChart.data.datasets[0].data = yearData.bar.paid;
+        barChart.data.datasets[1].data = yearData.bar.refund;
+        barChart.data.datasets[2].data = yearData.bar.partial;
+        barChart.data.datasets[3].data = yearData.bar.unpaid;
+        barChart.update();
+      }
+    }
+
+    function updateViewForYear(year) {
+      const yearData = getYearData(year);
+      updateStatusCards(yearData);
+      updateTable(yearData);
+      updateCharts(yearData);
+    }
+
+    // ============================================
+    // NOTIFICATION FUNCTIONS (modal)
+    // ============================================
+    function showNotifications() {
+      const modal = document.getElementById('notifModal');
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeNotificationModal() {
+      const modal = document.getElementById('notifModal');
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    // Close modal on click outside
+    document.addEventListener('click', (e) => {
+      const modal = document.getElementById('notifModal');
+      if (modal && modal.classList.contains('active') && e.target === modal) {
+        closeNotificationModal();
+      }
+    });
+
+    // ESC key closes modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeNotificationModal();
+      }
+    });
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      const yearSelect = document.getElementById('yearSelect');
+
+      // Populate year options from 2000 to current year (descending)
+      const currentYear = new Date().getFullYear();
+      for (let y = currentYear; y >= 2000; y--) {
+        const opt = document.createElement('option');
+        opt.value = String(y);
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
+      }
+
+      // Default selected year = currentYear (or closest available in paymentData)
+      if (paymentData[String(currentYear)]) {
+        yearSelect.value = String(currentYear);
+      } else {
+        const firstYear = Object.keys(paymentData)[0];
+        yearSelect.value = firstYear;
+      }
+
+      const initialYear = yearSelect.value;
+      const initialData = getYearData(initialYear);
+
+      // Initialize cards, table, and charts for default year
+      updateStatusCards(initialData);
+      updateTable(initialData);
+      initDonutChart(initialData);
+      initBarChart(initialData);
+
+      // When year changes, update all containers
+      yearSelect.addEventListener('change', (e) => {
+        const selectedYear = e.target.value;
+        updateViewForYear(selectedYear);
+      });
+    });
+  </script>
+</body>
+</html>
